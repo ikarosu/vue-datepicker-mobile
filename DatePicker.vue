@@ -200,6 +200,16 @@ export default {
           if (this.getTimestamp(tar) < this.getTimestamp(this.firstSelectDay)) {
             this.firstTime = true
             if (this.reverseSelect) {
+              // 取消上一次选中
+              this.$set(this.firstSelectDay, 'begin', false)
+              // 交换值
+              this.lastSelectDay = this.firstSelectDay
+              this.firstSelectDay = tar
+              // 按交换后的值设置开头和结尾
+              this.$set(this.firstSelectDay, 'begin', true)
+              this.$set(this.lastSelectDay, 'end', true)
+              // 将中间日期设为被选状态
+              this.selectRange()
             } else {
               // 取消上一次选中
               this.$set(this.firstSelectDay, 'begin', false)
@@ -215,19 +225,22 @@ export default {
             this.lastSelectDay = tar
             this.$set(tar, 'end', true)
             // 将中间日期设为被选状态
-            if (this.mIndexBegin > -1 && this.mIndexEnd > -1) {
-              for (let i = this.mIndexBegin; i <= this.mIndexEnd; i++) {
-                this.months[i].days.map(day => {
-                  if (this.getTimestamp(day) > this.getTimestamp(this.firstSelectDay) && this.getTimestamp(day) < this.getTimestamp(this.lastSelectDay))
-                    this.$set(day, 'active', true)
-                })
-              }
-            }
+            this.selectRange()
           }
       }
     },
     getTimestamp(tar) {
       return new Date(tar.year, tar.month - 1, tar.day).getTime()
+    },
+    selectRange() {
+      if (this.mIndexBegin > -1 && this.mIndexEnd > -1) {
+        for (let i = this.mIndexBegin; i <= this.mIndexEnd; i++) {
+          this.months[i].days.map(day => {
+            if (this.getTimestamp(day) > this.getTimestamp(this.firstSelectDay) && this.getTimestamp(day) < this.getTimestamp(this.lastSelectDay))
+              this.$set(day, 'active', true)
+          })
+        }
+      }
     }
   }
 }
