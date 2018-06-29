@@ -87,9 +87,7 @@ export default {
       months: [],
       firstTime: true,
       firstSelectDay: {},
-      lastSelectDay: {},
-      mIndexBegin: -1,
-      mIndexEnd: -1,
+      lastSelectDay: {}
     }
   },
   computed: {
@@ -101,6 +99,12 @@ export default {
     },
     $date() {
       return new DateHelper()
+    },
+    mIndexBegin() {
+      return this.months.findIndex(v => v.year === this.firstSelectDay.year && v.month === this.firstSelectDay.month)
+    },
+    mIndexEnd() {
+      return this.months.findIndex(v => v.year === this.lastSelectDay.year && v.month === this.lastSelectDay.month)
     }
   },
   created() {
@@ -170,41 +174,51 @@ export default {
   },
   methods: {
     selectOne(tar) {
+      // 点击禁用的
       const { disable } = tar
       if (disable) { return false }
-      if (this.getTimestamp(tar) === this.getTimestamp(this.firstSelectDay)) { return false }
+      // 第一次点击
       if (this.firstTime) {
         this.firstTime = false
+        // 清空之前选择
         if (this.mIndexBegin > -1 && this.mIndexEnd > -1) {
           for (let i = this.mIndexBegin; i <= this.mIndexEnd; i++) {
             this.months[i].days.map(day => {
-              if (day.day === this.firstSelectDay.day) this.$set(day, 'begin', false)
-              if (day.day > this.firstSelectDay.day && day.day < this.lastSelectDay.day) this.$set(day, 'active', false)
-              if (day.day === this.lastSelectDay.day) this.$set(day, 'end', false)
+              if (this.getTimestamp(day) === this.getTimestamp(this.firstSelectDay)) this.$set(day, 'begin', false)
+              if (this.getTimestamp(day) > this.getTimestamp(this.firstSelectDay) && this.getTimestamp(day) < this.getTimestamp(this.lastSelectDay)) this.$set(day, 'active', false)
+              if (this.getTimestamp(day) === this.getTimestamp(this.lastSelectDay)) this.$set(day, 'end', false)
             })
           }
         }
+        // 选中当前
         this.firstSelectDay = tar
         this.$set(tar, 'begin', true)
-      } else {
-          this.firstTime = true
+      } else { // 第二次点击
+          // 点击当天的不响应
+          if (this.getTimestamp(tar) === this.getTimestamp(this.firstSelectDay)) { return false }
+          // 在第一次点击之前
           if (this.getTimestamp(tar) < this.getTimestamp(this.firstSelectDay)) {
+            this.firstTime = true
             if (this.reverseSelect) {
             } else {
+              // 取消上一次选中
               this.$set(this.firstSelectDay, 'begin', false)
+              // 选中本次点击
               this.$set(tar, 'begin', true)
               this.firstSelectDay = tar
+              // 将下一次点击设为第二次
               this.firstTime = false
             }
           } else {
+            this.firstTime = true
+            // 选中当前日期作为结尾
             this.lastSelectDay = tar
             this.$set(tar, 'end', true)
-            this.mIndexBegin = this.months.findIndex(v => v.year === this.firstSelectDay.year && v.month === this.firstSelectDay.month)
-            this.mIndexEnd = this.months.findIndex(v => v.year === tar.year && v.month === tar.month)
+            // 将中间日期设为被选状态
             if (this.mIndexBegin > -1 && this.mIndexEnd > -1) {
               for (let i = this.mIndexBegin; i <= this.mIndexEnd; i++) {
                 this.months[i].days.map(day => {
-                  if (day.day > this.firstSelectDay.day && day.day < tar.day)
+                  if (this.getTimestamp(day) > this.getTimestamp(this.firstSelectDay) && this.getTimestamp(day) < this.getTimestamp(this.lastSelectDay))
                     this.$set(day, 'active', true)
                 })
               }
