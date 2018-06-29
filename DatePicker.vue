@@ -21,7 +21,7 @@
               :class="{'disable': day.disable, 'active': day.active, 'select': day.begin || day.end}"
               @touchstart="selectOne(day)">
               <span>{{day.begin ? '入住' : day.end ? '离店': '&nbsp;'}}</span>
-              <span class="number" :style="{color: day.rest ? restDayColor : ''}">{{day.date}}</span>
+              <span class="number" :style="{color: day.rest ? restDayColor : ''}">{{day.text}}</span>
               <span>{{day.price}}</span>
             </div>
           </div>
@@ -143,8 +143,9 @@ export default {
         obj.year = year
         obj.month = month
         obj.day = day
+        obj.date = `${year}-${month}-${day}`
         // 显示“今天”或者几号
-        obj.date = year === this.$date.year && month === this.$date.month && day === this.$date.day ? '今天' : day
+        obj.text = year === this.$date.year && month === this.$date.month && day === this.$date.day ? '今天' : day
         // 获取星期几，判断周末
         const weekday = new Date(year, month - 1, day).getDay()
         const weekend = weekday === 6 || weekday === 0
