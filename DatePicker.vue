@@ -1,16 +1,16 @@
 <template>
-  <section class="wrap">
+  <section class="wrap" @touchstart.self="display = false" :class="{hide: !display}">
     <div class="content">
       <header>
-        <a>取消</a>
+        <a @touchstart="display = false">取消</a>
         <strong>选择日期</strong>
       </header>
       <div class="week-text">
         <span v-for="(text, i) in weekTexts"
           :key="i"
-          :style="{color: mondayFirst
-            ? i == 5 || i == 6 ? restDayColor : ''
-            : i == 0 || i == 6 ? restDayColor : ''}">{{text}}</span>
+          :class="{rest: mondayFirst
+            ? i == 5 || i == 6 ? true : false
+            : i == 0 || i == 6 ? true : false}">{{text}}</span>
       </div>
       <main>
         <section class="month" v-for="(item, i) in months" :key="i">
@@ -21,8 +21,8 @@
               :class="{'disable': day.disable, 'active': day.active, 'select': day.begin || day.end}"
               @touchstart="selectOne(day)">
               <span>{{day.begin ? '入住' : day.end ? '离店': '&nbsp;'}}</span>
-              <span class="number" :style="{color: day.rest ? restDayColor : ''}">{{day.text}}</span>
-              <span>{{day.price}}</span>
+              <span class="number" :class="{restday: day.restday, rest: day.rest, workday: day.workday}">{{day.text}}</span>
+              <span>{{day.custom || '&nbsp;'}}</span>
             </div>
           </div>
         </section>
@@ -43,18 +43,28 @@ class DateHelper {
   get day() {
     return new Date().getDate()
   }
+  get date() {
+    return `${this.year}-${this.month}-${this.day}`
+  }
 }
 export default {
   props: {
+    display: {
+      type: Boolean,
+      default() { return false }
+    },
     // 是否周一为第一天
     mondayFirst: {
       type: Boolean,
       default() { return false }
     },
-    // 自定义休息日颜色
-    restDayColor: {
-      type: String,
-      default() { return 'tomato' }
+    restday: {
+      type: Array,
+      default() { return [] }
+    },
+    workday: {
+      type: Array,
+      default() { return [] }
     },
     // 加载日历的范围，单位为月
     displayRange: {
@@ -77,6 +87,11 @@ export default {
         const { year, month, day } = new DateHelper()
         return { year, month, day }
       }
+    },
+    // 可选择的结束日期
+    selectRangeEnd: {
+      type: String,
+      default() { return '9999-99-99' }
     },
     // 允许反向选择日期
     reverseSelect: {
@@ -114,6 +129,8 @@ export default {
     const months = []
     const { year: Y, month: M } = this.displayRangeStart
     const { year: Ys, month: Ms, day: Ds } = this.selectRangeStart
+    const arr = this.selectRangeEnd.split('-')
+    const [ Ye, Me, De ] = arr
     let { Y: year, M: month } = { Y, M }
     // 循环出月份
     for (let i = 0; i < this.displayRange; i++) {
@@ -151,13 +168,13 @@ export default {
         const weekend = weekday === 6 || weekday === 0
         // 判断是否禁用状态
         // 同时在非禁用状态下，才处理周末
-        if (year < Ys) {
+        if (year < Ys || year > Ye) {
           obj.disable = true
         } else if (year === Ys) {
-          if (month < Ms) {
+          if (month < Ms || month > Me) {
             obj.disable = true
           } else if (month === Ms) {
-            if (day < Ds) {
+            if (day < Ds || day > De) {
               obj.disable = true
             } else {
               obj.rest = day > Ds && weekend
@@ -167,6 +184,21 @@ export default {
           }
         } else {
           obj.rest = weekend
+        }
+        // 自定义休息日
+        if (this.restday.length) {
+          this.restday.forEach(date => {
+            if (date === obj.date) obj.restday = obj.rest = true
+          })
+        }
+        // 自定义工作日
+        if (this.workday.length) {
+          this.workday.forEach(date => {
+            if (date === obj.date) {
+              obj.workday = true
+              obj.rest = false
+            }
+          })
         }
         days.push(obj)
         // 结束循环每天
@@ -198,49 +230,49 @@ export default {
         this.firstSelectDay = tar
         this.$set(tar, 'begin', true)
       } else { // 第二次点击
-          // 点击当天的不响应
-          if (this.getTimestamp(tar) === this.getTimestamp(this.firstSelectDay)) { return false }
-          // 在第一次点击之前
-          if (this.getTimestamp(tar) < this.getTimestamp(this.firstSelectDay)) {
-            this.firstTime = true
-            if (this.reverseSelect) {
-              // 取消上一次选中
-              this.$set(this.firstSelectDay, 'begin', false)
-              // 交换值
-              this.lastSelectDay = this.firstSelectDay
-              this.firstSelectDay = tar
-              // 按交换后的值设置开头和结尾
-              this.$set(this.firstSelectDay, 'begin', true)
-              this.$set(this.lastSelectDay, 'end', true)
-              // 将中间日期设为被选状态
-              this.selectRange().then(range => {
-                this.$emit('select', {start: this.firstSelectDay, end: this.lastSelectDay, range})
-              })
-            } else {
-              // 取消上一次选中
-              this.$set(this.firstSelectDay, 'begin', false)
-              // 选中本次点击
-              this.$set(tar, 'begin', true)
-              this.firstSelectDay = tar
-              // 将下一次点击设为第二次
-              this.firstTime = false
-            }
-          } else {
-            this.firstTime = true
-            // 选中当前日期作为结尾
-            this.lastSelectDay = tar
-            this.$set(tar, 'end', true)
+        // 点击当天的不响应
+        if (this.getTimestamp(tar) === this.getTimestamp(this.firstSelectDay)) { return false }
+        // 在第一次点击之前
+        if (this.getTimestamp(tar) < this.getTimestamp(this.firstSelectDay)) {
+          this.firstTime = true
+          if (this.reverseSelect) {
+            // 取消上一次选中
+            this.$set(this.firstSelectDay, 'begin', false)
+            // 交换值
+            this.lastSelectDay = this.firstSelectDay
+            this.firstSelectDay = tar
+            // 按交换后的值设置开头和结尾
+            this.$set(this.firstSelectDay, 'begin', true)
+            this.$set(this.lastSelectDay, 'end', true)
             // 将中间日期设为被选状态
-            this.selectRange().then(range => {
-              this.$emit('select', {start: this.firstSelectDay, end: this.lastSelectDay, range})
+            this.chooseRange().then(range => {
+              this.$emit('select', { start: this.firstSelectDay, end: this.lastSelectDay, range })
             })
+          } else {
+            // 取消上一次选中
+            this.$set(this.firstSelectDay, 'begin', false)
+            // 选中本次点击
+            this.$set(tar, 'begin', true)
+            this.firstSelectDay = tar
+            // 将下一次点击设为第二次
+            this.firstTime = false
           }
+        } else {
+          this.firstTime = true
+          // 选中当前日期作为结尾
+          this.lastSelectDay = tar
+          this.$set(tar, 'end', true)
+          // 将中间日期设为被选状态
+          this.chooseRange().then(range => {
+            this.$emit('select', { start: this.firstSelectDay, end: this.lastSelectDay, range })
+          })
+        }
       }
     },
     getTimestamp(tar) {
       return new Date(tar.year, tar.month - 1, tar.day).getTime()
     },
-    selectRange() {
+    chooseRange() {
       return new Promise((resolve) => {
         if (this.mIndexBegin > -1 && this.mIndexEnd > -1) {
           let rangeList = []
@@ -270,6 +302,10 @@ export default {
   width: 100vw;
   height: 100vh;
   background-color: rgba(9, 9, 9, .7);
+  transition: transform .5s ease-out;
+  &.hide{
+    transform: translateY(100vh)
+  }
 }
 .content{
   position: absolute;
@@ -316,14 +352,21 @@ export default {
           display: flex;
           flex-direction: column;
           justify-content: center;
+          position: relative;
           width: 100 / 7vw;
           height: 70px;
           &.disable{
             color: #eee;
+            >span{
+              color: #eee!important;
+            }
           }
           &.select{
             color: white;
             background-color: deepskyblue;
+            >span{
+              color: white!important;
+            }
           }
           &.active{
             background-color: lightblue;
@@ -332,6 +375,24 @@ export default {
             font-size: 12px;
             &.number{
               font-size: 14px;
+            }
+            &.rest{
+              color: tomato;
+            }
+            &.restday:before{
+              content: '休';
+              position: absolute;
+              top: 2px;
+              left: 2px;
+              font-size: 12px;
+            }
+            &.workday:before{
+              content: '班';
+              position: absolute;
+              top: 2px;
+              left: 2px;
+              font-size: 12px;
+              color: inherit;
             }
           }
         }
