@@ -61,7 +61,7 @@ export default {
       type: Number,
       default() { return 13 }
     },
-    // 可自定义开始日期
+    // 可自定义显示开始日期
     // 默认为当月当日
     displayRangeStart: {
       type: Object,
@@ -70,6 +70,7 @@ export default {
         return { year, month, day }
       }
     },
+    // 可选择的开始日期
     selectRangeStart: {
       type: Object,
       default() {
@@ -77,6 +78,7 @@ export default {
         return { year, month, day }
       }
     },
+    // 允许反向选择日期
     reverseSelect: {
       type: Boolean,
       default() { return false }
@@ -87,7 +89,8 @@ export default {
       months: [],
       firstTime: true,
       firstSelectDay: {},
-      lastSelectDay: {}
+      lastSelectDay: {},
+      rangeList: []
     }
   },
   computed: {
@@ -209,7 +212,9 @@ export default {
               this.$set(this.firstSelectDay, 'begin', true)
               this.$set(this.lastSelectDay, 'end', true)
               // 将中间日期设为被选状态
-              this.selectRange()
+              this.selectRange().then(range => {
+                this.$emit('select', {start: this.firstSelectDay, end: this.lastSelectDay, range})
+              })
             } else {
               // 取消上一次选中
               this.$set(this.firstSelectDay, 'begin', false)
@@ -225,7 +230,9 @@ export default {
             this.lastSelectDay = tar
             this.$set(tar, 'end', true)
             // 将中间日期设为被选状态
-            this.selectRange()
+            this.selectRange().then(range => {
+              this.$emit('select', {start: this.firstSelectDay, end: this.lastSelectDay, range})
+            })
           }
       }
     },
@@ -233,14 +240,22 @@ export default {
       return new Date(tar.year, tar.month - 1, tar.day).getTime()
     },
     selectRange() {
-      if (this.mIndexBegin > -1 && this.mIndexEnd > -1) {
-        for (let i = this.mIndexBegin; i <= this.mIndexEnd; i++) {
-          this.months[i].days.map(day => {
-            if (this.getTimestamp(day) > this.getTimestamp(this.firstSelectDay) && this.getTimestamp(day) < this.getTimestamp(this.lastSelectDay))
-              this.$set(day, 'active', true)
-          })
+      return new Promise((resolve) => {
+        if (this.mIndexBegin > -1 && this.mIndexEnd > -1) {
+          let rangeList = []
+          for (let i = this.mIndexBegin; i <= this.mIndexEnd; i++) {
+            rangeList = rangeList.concat(this.months[i].days.filter(day => {
+              if (this.getTimestamp(day) > this.getTimestamp(this.firstSelectDay) && this.getTimestamp(day) < this.getTimestamp(this.lastSelectDay)) {
+                this.$set(day, 'active', true)
+                return day
+              }
+            }))
+          }
+          resolve(rangeList)
+        } else {
+          resolve(new Array())
         }
-      }
+      })
     }
   }
 }
