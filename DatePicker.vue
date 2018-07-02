@@ -1,16 +1,17 @@
 <template>
-  <section class="wrap" @touchstart.self="display = false" :class="{hide: !display}">
+  <section class="wrap" @touchstart.self="$emit('cancle')" :class="{hide: !display}">
     <div class="content">
       <header>
-        <a @touchstart="display = false">取消</a>
+        <a class="left" @touchstart="$emit('cancle')">取消</a>
         <strong>选择日期</strong>
+        <a v-if="!autoComplete" class="right" @touchstart="confirm">确认</a>
       </header>
       <div class="week-text">
         <span v-for="(text, i) in weekTexts"
           :key="i"
-          :class="{rest: mondayFirst
-            ? i == 5 || i == 6 ? true : false
-            : i == 0 || i == 6 ? true : false}">{{text}}</span>
+          :style="{color: mondayFirst
+            ? i == 5 || i == 6 ? 'tomato' : ''
+            : i == 0 || i == 6 ? 'tomato' : ''}">{{text}}</span>
       </div>
       <main>
         <section class="month" v-for="(item, i) in months" :key="i">
@@ -19,7 +20,7 @@
             <div class="day"
               v-for="(day, j) in item.days" :key="j"
               :class="{'disable': day.disable, 'active': day.active, 'select': day.begin || day.end}"
-              @touchstart="selectOne(day)">
+              @click="selectOne(day)">
               <span>{{day.begin ? '入住' : day.end ? '离店': '&nbsp;'}}</span>
               <span class="number" :class="{restday: day.restday, rest: day.rest, workday: day.workday}">{{day.text}}</span>
               <span v-if="day.custom" :class="{rest: day.custom.highlight}">{{day.custom.text}}</span>
@@ -50,6 +51,10 @@ class DateHelper {
 }
 export default {
   props: {
+    autoComplete: {
+      type: Boolean,
+      default() { return false }
+    },
     display: {
       type: Boolean,
       default() { return false }
@@ -108,7 +113,8 @@ export default {
       firstSelectDay: {},
       lastSelectDay: {},
       rangeList: [],
-      customDataIndex: 0
+      customDataIndex: 0,
+      range: []
     }
   },
   computed: {
@@ -163,7 +169,7 @@ export default {
         obj.year = year
         obj.month = month
         obj.day = day
-        obj.date = `${year}-${month}-${day}`
+        obj.date = `${year}-${month>9?month:'0'+month}-${day>9?day:'0'+day}` // 标准化前端日期格式
         // 显示“今天”或者几号
         obj.text = year === this.$date.year && month === this.$date.month && day === this.$date.day ? '今天' : day
         // 获取星期几，判断周末
@@ -213,11 +219,14 @@ export default {
     }
     // 自定义数据
     if (this.customData.length) {
+      // 将months里的days连接成一个普通的一维数组
       let days = []
       months.forEach(v => days = days.concat(v.days))
-      for (let i = this.customDataIndex, j = 0; i < days.length; i++, j++) {
+      // 从记录的index位置开始遍历日期，从0开始遍历自定义数组
+      for (let i = this.customDataIndex, j = 0; j < this.customData.length; i++, j++) {
         const v = days[i]
         const data = this.customData[j]
+        // 跳过1号之前的
         if (v.text && data) {
           const type = typeof data
           if (type === 'string') v.custom = { text: data }
@@ -233,6 +242,7 @@ export default {
       // 点击禁用的
       const { disable } = tar
       if (disable) { return false }
+      // 点击1号之前的空白区域
       if (!tar.text) { return false }
       // 第一次点击
       if (this.firstTime) {
@@ -267,7 +277,8 @@ export default {
             this.$set(this.lastSelectDay, 'end', true)
             // 将中间日期设为被选状态
             this.chooseRange().then(range => {
-              this.$emit('select', { start: this.firstSelectDay, end: this.lastSelectDay, range })
+              this.range = range
+              if (this.autoComplete) this.confirm()
             })
           } else {
             // 取消上一次选中
@@ -285,7 +296,8 @@ export default {
           this.$set(tar, 'end', true)
           // 将中间日期设为被选状态
           this.chooseRange().then(range => {
-            this.$emit('select', { start: this.firstSelectDay, end: this.lastSelectDay, range })
+              this.range = range
+              if (this.autoComplete) this.confirm()
           })
         }
       }
@@ -310,6 +322,9 @@ export default {
           resolve(new Array())
         }
       })
+    },
+    confirm() {
+      this.$emit('select', { start: this.firstSelectDay, end: this.lastSelectDay, range: this.range })
     }
   }
 }
@@ -324,6 +339,7 @@ export default {
   height: 100vh;
   background-color: rgba(9, 9, 9, .7);
   transition: transform .5s ease-out;
+  z-index: 8;
   &.hide{
     transform: translateY(100vh)
   }
@@ -343,8 +359,13 @@ export default {
     >a{
       position: absolute;
       top: 10px;
-      left: 10px;
       font-size: 14px;
+      &.left{
+        left: 10px;
+      }
+      &.right{
+        right: 10px;
+      }
     }
   }
   .week-text{
@@ -365,6 +386,7 @@ export default {
         top: 0;
         padding: 5px;
         background-color: #eee;
+        z-index: 1;
       }
       .day-wrap{
         display: flex;
