@@ -22,7 +22,8 @@
               @touchstart="selectOne(day)">
               <span>{{day.begin ? '入住' : day.end ? '离店': '&nbsp;'}}</span>
               <span class="number" :class="{restday: day.restday, rest: day.rest, workday: day.workday}">{{day.text}}</span>
-              <span>{{day.custom || '&nbsp;'}}</span>
+              <span v-if="day.custom" :class="{rest: day.custom.highlight}">{{day.custom.text}}</span>
+              <span v-else>&nbsp;</span>
             </div>
           </div>
         </section>
@@ -58,10 +59,17 @@ export default {
       type: Boolean,
       default() { return false }
     },
+    // 允许反向选择日期
+    reverseSelect: {
+      type: Boolean,
+      default() { return false }
+    },
+    // 自定义节假日
     restday: {
       type: Array,
       default() { return [] }
     },
+    // 自定义补班日
     workday: {
       type: Array,
       default() { return [] }
@@ -74,29 +82,23 @@ export default {
     // 可自定义显示开始日期
     // 默认为当月当日
     displayRangeStart: {
-      type: Object,
-      default() {
-        const { year, month, day } = new DateHelper()
-        return { year, month, day }
-      }
+      type: String,
+      default() { return new DateHelper().date}
     },
     // 可选择的开始日期
     selectRangeStart: {
-      type: Object,
-      default() {
-        const { year, month, day } = new DateHelper()
-        return { year, month, day }
-      }
+      type: String,
+      default() { return new DateHelper().date}
     },
     // 可选择的结束日期
     selectRangeEnd: {
       type: String,
       default() { return '9999-99-99' }
     },
-    // 允许反向选择日期
-    reverseSelect: {
-      type: Boolean,
-      default() { return false }
+    // 自定义数据
+    customData: {
+      type: Array,
+      default() { return [] }
     }
   },
   data() {
@@ -105,7 +107,8 @@ export default {
       firstTime: true,
       firstSelectDay: {},
       lastSelectDay: {},
-      rangeList: []
+      rangeList: [],
+      customDataIndex: 0
     }
   },
   computed: {
@@ -127,11 +130,11 @@ export default {
   },
   created() {
     const months = []
-    const { year: Y, month: M } = this.displayRangeStart
-    const { year: Ys, month: Ms, day: Ds } = this.selectRangeStart
-    const arr = this.selectRangeEnd.split('-')
-    const [ Ye, Me, De ] = arr
-    let { Y: year, M: month } = { Y, M }
+    const [Y, M] = this.displayRangeStart.split('-').map(Number)
+    const [Ys, Ms, Ds] = this.selectRangeStart.split('-').map(Number)
+    const [Ye, Me, De] = this.selectRangeEnd.split('-').map(Number)
+    let [year, month] = [Y, M]
+    let customIndex = 0
     // 循环出月份
     for (let i = 0; i < this.displayRange; i++) {
       // 满 13月进 1年
@@ -178,6 +181,7 @@ export default {
               obj.disable = true
             } else {
               obj.rest = day > Ds && weekend
+              if (day === Ds) this.customDataIndex = customIndex
             }
           } else {
             obj.rest = weekend
@@ -200,11 +204,27 @@ export default {
             }
           })
         }
+        customIndex++
         days.push(obj)
         // 结束循环每天
       }
       months.push({ year, month, days })
       // 结束循环每月
+    }
+    // 自定义数据
+    if (this.customData.length) {
+      let days = []
+      months.forEach(v => days = days.concat(v.days))
+      for (let i = this.customDataIndex, j = 0; i < days.length; i++, j++) {
+        const v = days[i]
+        const data = this.customData[j]
+        if (v.text && data) {
+          const type = typeof data
+          if (type === 'string') v.custom = { text: data }
+          else if (type === 'object') v.custom = data
+          else console.error(`customData数组每项的类型应该是String或Object，但是得到的是${type}`)
+        }
+      }
     }
     this.months = months
   },
