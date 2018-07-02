@@ -169,7 +169,8 @@ export default {
         obj.year = year
         obj.month = month
         obj.day = day
-        obj.date = `${year}-${month>9?month:'0'+month}-${day>9?day:'0'+day}` // 标准化前端日期格式
+        obj.date = `${year}-${month}-${day}`
+        obj.odate = `${year}-${month>9?month:'0'+month}-${day>9?day:'0'+day}` // 补0的日期格式
         // 显示“今天”或者几号
         obj.text = year === this.$date.year && month === this.$date.month && day === this.$date.day ? '今天' : day
         // 获取星期几，判断周末
