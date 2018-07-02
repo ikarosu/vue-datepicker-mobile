@@ -233,6 +233,7 @@ export default {
       // 点击禁用的
       const { disable } = tar
       if (disable) { return false }
+      if (!tar.text) { return false }
       // 第一次点击
       if (this.firstTime) {
         this.firstTime = false
