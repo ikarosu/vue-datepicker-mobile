@@ -159,6 +159,7 @@ export default {
       // 周日为 0，需处理成 7-1
       if (this.mondayFirst) placeholder = placeholder === 0 ? 6 : placeholder - 1
       for (let j = 0; j < placeholder; j++) {
+        customIndex++
         days.push({})
       }
       // 得到当月总天数
