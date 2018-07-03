@@ -1,14 +1,15 @@
 # vue-datepicker-mobile
 
 移动端友好的日历，用于酒店入住，可选择范围
+**TODO：带*的prop暂时无法接收异步数据，待解决**
 
 ## 属性
 
 | 参数 | 说明 | 类型 | 默认值 |
 | - | :-: | :-: | -: |
-| autoComplete | 选择日期后自动确认 | boolean | false |
-| mondayFirst | 周一开头。默认周日开头 | boolean | false |
-| reverseSelect | 允许往前反选日期 | boolean | false |
+| autoComplete | 是否选择日期后自动确认，false时将显示确认按钮，由用户手动点击确认。 | boolean | false |
+| mondayFirst | 是否周一开头。默认周日开头 | boolean | false |
+| reverseSelect | 是否允许往前反选日期 | boolean | false |
 
 ## Prop
 | 参数 | 说明 | 类型 | 默认值 |
@@ -29,5 +30,24 @@
 
 ## Events
 
-### select()
+### `select({start, end, range})`
+选择后触发，有三个参数，start和end分别代表被选中的开始和结尾，是一个选中对象，而range是一个数组，表示出了开始和结尾中间被选中的部分，为选中对象的集合，如果开始和结尾没有间隔，得到一个空数组。
+#### 选中对象
+被选中的对象包含以下属性：
+| 参数 | 说明 | 类型 |
+| - | :-: | :-: |
+| year | 年份 | number |
+| month | 月份 | number |
+| day | 号数 | number |
+| date | 完整日期 YYYY-M-D | string |
+| odate | 完整日期 YYYY-MM-DD | string |
+| rest | 是否为休息日，包含不是工作日的周末和指定公休日 | boolean |
+| restday | 是否为指定的休息日 | boolean |
+| workday | 是否为指定的工作日（补班） | boolean |
+| disabled | 是否禁用，可选的都为false | boolean |
+| customData | 自定义显示的文本。{ highlight: boolean, text: string} | object |
+| begin | 是否为选中的开始 | boolean |
+| active | 是否为选中中间部分 | boolean |
+| end | 是否为选中的结束 | boolean |
 ### cancle()
+取消时触发，用于手动隐藏窗口。
