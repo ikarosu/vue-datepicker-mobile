@@ -5,8 +5,8 @@
 **TODO：带*的prop暂时无法接收异步数据，待解决**
 
 ![e.g.](https://github.com/ikarosu/vue-datepicker-mobile/blob/master/git/eg.png?raw=true)
-
-![qr](https://github.com/ikarosu/vue-datepicker-mobile/blob/master/git/qr.png?raw=true)
+[Live Demo](https://ikarosu.github.io/datepicker/)
+![demo](https://github.com/ikarosu/vue-datepicker-mobile/blob/master/git/qr.png?raw=true)
 
 ## 属性
 
