@@ -11,14 +11,14 @@
 ## 属性
 
 | 参数 | 说明 | 类型 | 默认值 |
-| - | :-: | :-: | -: |
+| :-: | :- | :-: | :-: |
 | autoComplete | 是否选择日期后自动确认，false时将显示确认按钮，由用户手动点击确认。 | boolean | false |
 | mondayFirst | 是否周一开头。默认周日开头 | boolean | false |
 | reverseSelect | 是否允许往前反选日期 | boolean | false |
 
 ## Prop
 | 参数 | 说明 | 类型 | 默认值 |
-| - | :-: | :-: | -: |
+| :-: | :- | :-: | :-: |
 | display | 显示这个日期选择器 | boolean | false |
 | displayRange | 显示的范围，以月为长度 | number | 13 |
 | displayRangeStart | 显示的开始月份，默认为当月。示例：`'2018-9-1'` | string | - |
@@ -33,17 +33,17 @@
 
 当时字符串的时候，直接显示文本。 `['￥100']`
 
-如果需要高亮显示，则需是一个对象。`[{ highlight: true, text: '￥100'}]`
+如果需要高亮显示，则需是一个对象。`[{ highlight: true, text: '￥100' }]`
 
 ## Events
 
-### `select({start, end, range})`
+### `select({ start, end, range })`
 选择后触发，有三个参数，start和end分别代表被选中的开始和结尾，是一个选中对象，而range是一个数组，表示出了开始和结尾中间被选中的部分，为选中对象的集合，如果开始和结尾没有间隔，得到一个空数组。
 #### 选中对象
 被选中的对象包含以下属性：
 
 | 参数 | 说明 | 类型 |
-| - | :-: | -: |
+| :-: | :- | :-: |
 | year | 年份 | number |
 | month | 月份 | number |
 | day | 号数 | number |
