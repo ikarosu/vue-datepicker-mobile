@@ -6,6 +6,8 @@
 
 ![e.g.](https://github.com/ikarosu/vue-datepicker-mobile/blob/master/git/eg.png?raw=true)
 
+![qr](https://github.com/ikarosu/vue-datepicker-mobile/blob/master/git/qr.png?raw=true)
+
 ## 属性
 
 | 参数 | 说明 | 类型 | 默认值 |
