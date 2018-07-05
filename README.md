@@ -1,6 +1,7 @@
 # vue-datepicker-mobile
-[中文](/doc/zh-hans.md)
-Calendar, which can select the date by the range, friendly for mobile.It is typically used for hotel. 
+[中文版](/doc/zh-hans.md)
+
+A calendar friendly for mobile, which can select the date by the range, friendly for mobile.It is typically used for hotel. 
 
 **TODO：* is bugs.it can't use async data.It's repairing.**
 
