@@ -3,7 +3,7 @@
 
 A calendar friendly for mobile, which can select the date by the range, friendly for mobile.It is typically used for hotel. 
 
-**TODO：* is bugs.it can't use async data.It's repairing.**
+**TODO：\* is bugs.it can't use async data.It's repairing.**
 
 ![e.g.](https://github.com/ikarosu/vue-datepicker-mobile/blob/master/git/eg.png?raw=true)
 [Live Demo](https://ikarosu.github.io/datepicker/)
