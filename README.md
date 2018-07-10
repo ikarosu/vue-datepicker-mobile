@@ -35,13 +35,14 @@ Data will use today as index to 0, one by one add to after the date.
 If value's type is string, it will show as text.`['￥100']`
 
 pass a object to option more
-| 参数 | 说明 | 类型 |
+
+| param | description | type |
 | :-: | :- | :-: |
 | text | text | string |
 | highlight | highlight for text | boolean |
 | bgcolor | background color | string |
 
-例如：`[{ highlight: true, text: '￥100' }]`
+e.g. `[{ highlight: true, text: '￥100' }]`
 
 ## Events
 
