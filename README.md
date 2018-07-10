@@ -3,8 +3,6 @@
 
 A calendar friendly for mobile, which can select the date by the range, friendly for mobile.It is typically used for hotel. 
 
-**TODO：\* is bugs.it can't use async data.It's repairing.**
-
 ![e.g.](https://github.com/ikarosu/vue-datepicker-mobile/blob/master/git/eg.png?raw=true)
 [Live Demo](https://ikarosu.github.io/datepicker/)
 ![demo qr](https://github.com/ikarosu/vue-datepicker-mobile/blob/master/git/qr.png?raw=true)
@@ -16,6 +14,8 @@ A calendar friendly for mobile, which can select the date by the range, friendly
 | autoComplete |  After choosing the date whether to auto-complete, if false, it will show confirm button. | boolean | false |
 | mondayFirst | Whether Monday is the first-day as a week, default for Sunday. | boolean | false |
 | reverseSelect | Whether allow reverse choose date. | boolean | false |
+| beginningText | text of beginning for selected | boolean | false |
+| endText | text of end for selected | boolean | false |
 
 ## Prop
 | param | description | type | defalut |
@@ -34,7 +34,14 @@ Data will use today as index to 0, one by one add to after the date.
 
 If value's type is string, it will show as text.`['￥100']`
 
-If you need to show highlight, you need a object.`[{ highlight: true, text: '￥100' }]`
+pass a object to option more
+| 参数 | 说明 | 类型 |
+| :-: | :- | :-: |
+| text | text | string |
+| highlight | highlight for text | boolean |
+| bgcolor | background color | string |
+
+例如：`[{ highlight: true, text: '￥100' }]`
 
 ## Events
 

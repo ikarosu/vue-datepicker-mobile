@@ -2,8 +2,6 @@
 
 移动端友好的日历，用于酒店入住，可选择范围
 
-**TODO：带*的prop暂时无法接收异步数据，待解决**
-
 ![e.g.](https://github.com/ikarosu/vue-datepicker-mobile/blob/master/git/eg.png?raw=true)
 [Live Demo](https://ikarosu.github.io/datepicker/)
 ![demo](https://github.com/ikarosu/vue-datepicker-mobile/blob/master/git/qr.png?raw=true)
@@ -15,6 +13,8 @@
 | autoComplete | 是否选择日期后自动确认，false时将显示确认按钮，由用户手动点击确认。 | boolean | false |
 | mondayFirst | 是否周一开头。默认周日开头 | boolean | false |
 | reverseSelect | 是否允许往前反选日期 | boolean | false |
+| beginningText | 选中的起点日期文本 | boolean | false |
+| endText | 选中的终点日期文本 | boolean | false |
 
 ## Prop
 | 参数 | 说明 | 类型 | 默认值 |
@@ -24,16 +24,23 @@
 | displayRangeStart | 显示的开始月份，默认为当月。示例：`'2018-9-1'` | string | - |
 | selectRangeStart | 可以选择的开始日期，默认为当日。格式同上。 | string | - |
 | selectRangeEnd | 可以选择的结束日期，默认为显示结束。格式同上。 | string | - |
-| restday* | 自定义节假日，会有“休”字提示。是一个字符串数组。示例：`['2019.5.1', '2019.5.2', '2019.5.3']` | array | - |
-| workday* | 自定义工作日，会有“班”字提示。是一个字符串数组。示例：`['2019.5.4', '2019.5.5']` | array | - |
-| customData* | 自定义显示的文本数组，可以是一个字符串或者对象。 | array | - |
+| restday | 自定义节假日，会有“休”字提示。是一个字符串数组。示例：`['2019.5.1', '2019.5.2', '2019.5.3']` | array | - |
+| workday | 自定义工作日，会有“班”字提示。是一个字符串数组。示例：`['2019.5.4', '2019.5.5']` | array | - |
+| customData | 自定义显示的文本数组，可以是一个字符串或者对象。 | array | - |
 
-### customData*
+### customData
 数据以当日为index 0，顺序往后加入到日历中。
 
 当是字符串的时候，直接显示文本。 `['￥100']`
 
-如果需要高亮显示，则需是一个对象。`[{ highlight: true, text: '￥100' }]`
+通过传入一个对象，来配置其他选项
+| 参数 | 说明 | 类型 |
+| :-: | :- | :-: |
+| text | 文本 | string |
+| highlight | 高亮显示文本 | boolean |
+| bgcolor | 背景颜色。接受一个合法的颜色值 | string |
+
+例如：`[{ highlight: true, text: '￥100' }]`
 
 ## Events
 

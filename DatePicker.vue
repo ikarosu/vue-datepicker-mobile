@@ -19,9 +19,10 @@
           <div class="day-wrap">
             <div class="day"
               v-for="(day, j) in item.days" :key="j"
+              :style="{'background-color': day.custom&&day.custom.bgcolor}"
               :class="{'disable': day.disable, 'active': day.active, 'select': day.begin || day.end}"
               @click="selectOne(day)">
-              <span>{{day.begin ? '入住' : day.end ? '离店': '&nbsp;'}}</span>
+              <span>{{day.begin ? beginningText : day.end ? endText: '&nbsp;'}}</span>
               <span class="number" :class="{restday: day.restday, rest: day.rest, workday: day.workday}">{{day.text}}</span>
               <span v-if="day.custom" :class="{rest: day.custom.highlight}">{{day.custom.text}}</span>
               <span v-else>&nbsp;</span>
@@ -104,6 +105,16 @@ export default {
     customData: {
       type: Array,
       default() { return [] }
+    },
+    // 选择开头自定义文本
+    beginningText: {
+      type: String,
+      default() { return '入住' }
+    },
+    // 选择末尾自定义文本
+    endText: {
+      type: String,
+      default() { return '离店' }
     }
   },
   data() {
@@ -132,6 +143,41 @@ export default {
     },
     mIndexEnd() {
       return this.months.findIndex(v => v.year === this.lastSelectDay.year && v.month === this.lastSelectDay.month)
+    }
+  },
+  watch: {
+    restday() {
+      const vm = this
+      if (this.restday.length) {
+        this.deconstruction((date) => {
+          this.restday.forEach(restday => {
+            const restdate = new Date(restday)
+            const [y, m, d] = [restdate.getFullYear(), restdate.getMonth() + 1, restdate.getDate()]
+            if (y === date.year && m === date.month && d === date.day) {
+              vm.$set(date, 'rest', true)
+              vm.$set(date, 'restday', true)
+            }
+          })
+        })
+      }
+    },
+    workday() {
+      const vm = this
+      if (this.workday.length) {
+        this.deconstruction((date) => {
+          this.workday.forEach(workday => {
+            const workdate = new Date(workday)
+            const [y, m, d] = [workdate.getFullYear(), workdate.getMonth() + 1, workdate.getDate()]
+            if (y === date.year && m === date.month && d === date.day) {
+              vm.$set(date, 'rest', false)
+              vm.$set(date, 'workday', true)
+            }
+          })
+        })
+      }
+    },
+    customData() {
+      this.setCustomData()
     }
   },
   created() {
@@ -219,25 +265,8 @@ export default {
       months.push({ year, month, days })
       // 结束循环每月
     }
-    // 自定义数据
-    if (this.customData.length) {
-      // 将months里的days连接成一个普通的一维数组
-      let days = []
-      months.forEach(v => days = days.concat(v.days))
-      // 从记录的index位置开始遍历日期，从0开始遍历自定义数组
-      for (let i = this.customDataIndex, j = 0; j < this.customData.length; i++, j++) {
-        const v = days[i]
-        const data = this.customData[j]
-        // 跳过1号之前的
-        if (v.text && data) {
-          const type = typeof data
-          if (type === 'string') v.custom = { text: data }
-          else if (type === 'object') v.custom = data
-          else console.error(`customData数组每项的类型应该是String或Object，但是得到的是${type}`)
-        }
-      }
-    }
     this.months = months
+    this.setCustomData()
   },
   methods: {
     selectOne(tar) {
@@ -327,6 +356,33 @@ export default {
     },
     confirm() {
       this.$emit('select', { start: this.firstSelectDay, end: this.lastSelectDay, range: this.range })
+    },
+    deconstruction(callback) {
+      this.months.forEach(month => {
+        month.days.forEach(date => {
+          callback(date)
+        })
+      })
+    },
+    setCustomData() {
+      // 自定义数据
+      if (this.customData.length) {
+        // 将months里的days连接成一个普通的一维数组
+        let days = []
+        this.months.forEach(v => days = days.concat(v.days))
+        // 从记录的index位置开始遍历日期，从0开始遍历自定义数组
+        for (let i = this.customDataIndex, j = 0; j < this.customData.length; i++, j++) {
+          const v = days[i]
+          const data = this.customData[j]
+          // 跳过1号之前的
+          if (v.text && data) {
+            const type = typeof data
+            if (type === 'string') v.custom = { text: data }
+            else if (type === 'object') v.custom = data
+            else throw(`customData数组每项的类型应该是String或Object，但是得到的是${type}`)
+          }
+        }
+      }
     }
   }
 }
@@ -400,6 +456,8 @@ export default {
           position: relative;
           width: 100 / 7vw;
           height: 70px;
+          box-shadow: inset 0 0 2px 2px white;
+          transition: all .3s;
           &.disable{
             color: #eee;
             >span{
@@ -409,12 +467,14 @@ export default {
           &.select{
             color: white;
             background-color: deepskyblue;
+            box-shadow: none;
             >span{
               color: white!important;
             }
           }
           &.active{
             background-color: lightblue;
+            box-shadow: none;
           }
           span{
             font-size: 12px;
