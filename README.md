@@ -14,8 +14,8 @@ A calendar friendly for mobile, which can select the date by the range, friendly
 | autoComplete |  After choosing the date whether to auto-complete, if false, it will show confirm button. | boolean | false |
 | mondayFirst | Whether Monday is the first-day as a week, default for Sunday. | boolean | false |
 | reverseSelect | Whether allow reverse choose date. | boolean | false |
-| beginningText | text of beginning for selected | boolean | false |
-| endText | text of end for selected | boolean | false |
+| beginningText | text of beginning for selected | string | '入住' |
+| endText | text of end for selected | string | '离店' |
 
 ## Prop
 | param | description | type | defalut |

@@ -13,8 +13,8 @@
 | autoComplete | 是否选择日期后自动确认，false时将显示确认按钮，由用户手动点击确认。 | boolean | false |
 | mondayFirst | 是否周一开头。默认周日开头 | boolean | false |
 | reverseSelect | 是否允许往前反选日期 | boolean | false |
-| beginningText | 选中的起点日期文本 | boolean | false |
-| endText | 选中的终点日期文本 | boolean | false |
+| beginningText | 选中的起点日期文本 | string | '入住' |
+| endText | 选中的终点日期文本 | string | '离店' |
 
 ## Prop
 | 参数 | 说明 | 类型 | 默认值 |
