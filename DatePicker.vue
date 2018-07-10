@@ -1,8 +1,8 @@
 <template>
-  <section class="wrap" @touchstart.self="$emit('cancle')" :class="{hide: !display}">
+  <section class="wrap" @touchstart.self="$emit('cancel')" :class="{hide: !display}">
     <div class="content">
       <header>
-        <a class="left" @touchstart="$emit('cancle')">取消</a>
+        <a class="left" @touchstart="$emit('cancel')">取消</a>
         <strong>选择日期</strong>
         <a v-if="!autoComplete" class="right" @touchstart="confirm">确认</a>
       </header>

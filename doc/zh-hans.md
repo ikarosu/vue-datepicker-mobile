@@ -61,11 +61,11 @@
 | restday | 是否为指定的休息日 | boolean |
 | workday | 是否为指定的工作日（补班） | boolean |
 | disabled | 是否禁用，可选的都为false | boolean |
-| customData | 自定义显示的文本。`{ highlight: boolean, text: string }` | object |
+| customData | 自定义显示的文本。具体属性见上方`customData` | object |
 | begin | 是否为选中的开始 | boolean |
 | active | 是否为选中中间部分 | boolean |
 | end | 是否为选中的结束 | boolean |
-### cancle()
+### cancel()
 取消时触发，用于手动隐藏窗口。
 
 ## 使用示例
@@ -79,7 +79,7 @@
   :display="show"
   :customData="data"
   @select="select"
-  @cancle="cancle"
+  @cancel="cancel"
   autoComplete/>
 ```
 
@@ -107,7 +107,7 @@ export default {
       console.log('range', range)
       this.show = false
     },
-    cancle() {
+    cancel() {
       this.show = false
     }
   },

@@ -25,11 +25,11 @@ A calendar friendly for mobile, which can select the date by the range, friendly
 | displayRangeStart | display start month.default is this month. e.g. `'2018-9-1'` | string | - |
 | selectRangeStart | can choose start date.default is today. | string | - |
 | selectRangeEnd |can choose the end date. default show the end. | string | - |
-| restday* | custom restday.default highlight display and show chinese "休".e.g. `['2019.5.1', '2019.5.2', '2019.5.3']` | array | - |
-| workday* | custom restday.default highlight display and show chinese "班".e.g. `['2019.5.4', '2019.5.5']` | array | - |
-| customData* | custom data.display custom text on date,and optional highlight. | array | - |
+| restday | custom restday.default highlight display and show chinese "休".e.g. `['2019.5.1', '2019.5.2', '2019.5.3']` | array | - |
+| workday | custom restday.default highlight display and show chinese "班".e.g. `['2019.5.4', '2019.5.5']` | array | - |
+| customData | custom data.display custom text on date,and optional highlight. | array | - |
 
-### customData*
+### customData
 Data will use today as index to 0, one by one add to after the date.
 
 If value's type is string, it will show as text.`['￥100']`
@@ -63,12 +63,12 @@ Selected date object has following keys:
 | restday | Whether custom restday | boolean |
 | workday | Whether custom workday | boolean |
 | disabled | Whether disabled | boolean |
-| customData | custom data`{ highlight: boolean, text: string }` | object |
+| customData | custom data.See `customData` | object |
 | begin | Whether selected date start | boolean |
 | active | Whether selected date between start and end | boolean |
 | end | Whether selected date end | boolean |
-### cancle()
-After cancle, it used to hide datepicker window.
+### cancel()
+After cancel, it used to hide datepicker window.
 
 ## used demo
 ```html
@@ -81,7 +81,7 @@ After cancle, it used to hide datepicker window.
   :display="show"
   :customData="data"
   @select="select"
-  @cancle="cancle"
+  @cancel="cancel"
   autoComplete/>
 ```
 
@@ -109,7 +109,7 @@ export default {
       console.log('range', range)
       this.show = false
     },
-    cancle() {
+    cancel() {
       this.show = false
     }
   },
