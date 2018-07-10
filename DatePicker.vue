@@ -89,12 +89,12 @@ export default {
     // 默认为当月当日
     displayRangeStart: {
       type: String,
-      default() { return new DateHelper().date}
+      default() { return new DateHelper().date }
     },
     // 可选择的开始日期
     selectRangeStart: {
       type: String,
-      default() { return new DateHelper().date}
+      default() { return new DateHelper().date }
     },
     // 可选择的结束日期
     selectRangeEnd: {
@@ -217,7 +217,7 @@ export default {
         obj.month = month
         obj.day = day
         obj.date = `${year}-${month}-${day}`
-        obj.odate = `${year}-${month>9?month:'0'+month}-${day>9?day:'0'+day}` // 补0的日期格式
+        obj.odate = `${year}-${ month > 9 ? month : '0' + month}-${ day > 9 ? day : '0' + day}` // 补0的日期格式
         // 显示“今天”或者几号
         obj.text = year === this.$date.year && month === this.$date.month && day === this.$date.day ? '今天' : day
         // 获取星期几，判断周末
@@ -327,8 +327,8 @@ export default {
           this.$set(tar, 'end', true)
           // 将中间日期设为被选状态
           this.chooseRange().then(range => {
-              this.range = range
-              if (this.autoComplete) this.confirm()
+            this.range = range
+            if (this.autoComplete) this.confirm()
           })
         }
       }
@@ -379,7 +379,7 @@ export default {
             const type = typeof data
             if (type === 'string') v.custom = { text: data }
             else if (type === 'object') v.custom = data
-            else throw(`customData数组每项的类型应该是String或Object，但是得到的是${type}`)
+            else throw `customData数组每项的类型应该是String或Object，但是得到的是${type}`
           }
         }
       }
