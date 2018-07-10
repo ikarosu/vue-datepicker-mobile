@@ -73,7 +73,6 @@
 -
 <input type="date" @touchstart="show = true" v-model="endDate" readonly>
 <DatePicker
-  :displayRangeStart="start"
   :restday="restday"
   :workday="workday"
   :display="show"
@@ -94,7 +93,6 @@ export default {
     return {
       startDate: '',
       endDate: '',
-      start: '2018-6-1',
       restday: [],
       workday: ['2018-9-29', '2018-9-30'],
       data: ['￥1300', '￥1345', { highlight: true, text: '￥888' }],
@@ -113,9 +111,11 @@ export default {
     }
   },
   created() {
-    // 异步数据暂时无法使用。。待解决
+    // it is working!
     setTimeout(() => {
-      this.restday = ['2018-9-22', '2018-9-23', '2018-9-24']
+      this.workday = ['2018-8-25', '2018-8-26', '2018-8-27']
+      this.restday = ['2018-8-22', '2018-8-23', '2018-8-24']
+      this.data = ['￥1999', { text:'￥2018',bgcolor: 'lightgreen' }, { highlight: true, text: '￥666' }, { highlight: true, text: '￥888',bgcolor: 'gold' }]
     }, 2000)
   }
 }
