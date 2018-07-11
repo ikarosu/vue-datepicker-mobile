@@ -102,7 +102,7 @@ export default {
       default() { return '9999-99-99' }
     },
     // 自定义数据
-    customData: {
+    custom: {
       type: Array,
       default() { return [] }
     },
@@ -124,7 +124,7 @@ export default {
       firstSelectDay: {},
       lastSelectDay: {},
       rangeList: [],
-      customDataIndex: 0,
+      customIndex: 0,
       range: []
     }
   },
@@ -176,8 +176,8 @@ export default {
         })
       }
     },
-    customData() {
-      this.setCustomData()
+    custom() {
+      this.setcustom()
     }
   },
   created() {
@@ -235,7 +235,7 @@ export default {
               obj.disabled = true
             } else {
               obj.rest = day > Ds && weekend
-              if (day === Ds) this.customDataIndex = customIndex
+              if (day === Ds) this.customIndex = customIndex
             }
           } else {
             obj.rest = weekend
@@ -266,7 +266,7 @@ export default {
       // 结束循环每月
     }
     this.months = months
-    this.setCustomData()
+    this.setcustom()
   },
   methods: {
     selectOne(tar) {
@@ -398,22 +398,22 @@ export default {
         })
       })
     },
-    setCustomData() {
+    setcustom() {
       // 自定义数据
-      if (this.customData.length) {
+      if (this.custom.length) {
         // 将months里的days连接成一个普通的一维数组
         let days = []
         this.months.forEach(v => days = days.concat(v.days))
         // 从记录的index位置开始遍历日期，从0开始遍历自定义数组
-        for (let i = this.customDataIndex, j = 0; j < this.customData.length; i++, j++) {
+        for (let i = this.customIndex, j = 0; j < this.custom.length; i++, j++) {
           const v = days[i]
-          const data = this.customData[j]
+          const data = this.custom[j]
           // 跳过1号之前的
           if (v.text && data) {
             const type = typeof data
             if (type === 'string') v.custom = { text: data }
             else if (type === 'object') v.custom = data
-            else throw `customData数组每项的类型应该是String或Object，但是得到的是${type}`
+            else throw `custom数组每项的类型应该是String或Object，但是得到的是${type}`
           }
         }
       }
