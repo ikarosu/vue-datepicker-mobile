@@ -134,13 +134,13 @@ export default {
       this.restday = ['2018-8-22', '2018-8-23', '2018-8-24']
       this.data = [
         '￥1999',
-        { text:'￥2018', bgcolor: 'lightgreen' },
+        { text: '￥2018', bgcolor: 'lightgreen' },
         '', '', '', '',
         { highlight: true, text: '￥666', bgcolor: 'gold' },
-        { highlight: true, text: '￥888'}, '', '',
+        { highlight: true, text: '￥888' }, '', '',
         { disabled: true, bgcolor: 'red', dec: 'Repairing' }
       ]
-    }, 2000);
+    }, 2000)
   }
 }
 ```
