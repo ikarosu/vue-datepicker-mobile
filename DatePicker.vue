@@ -20,7 +20,7 @@
             <div class="day"
               v-for="(day, j) in item.days" :key="j"
               :style="{'background-color': day.custom&&day.custom.bgcolor}"
-              :class="{'disable': day.disable, 'active': day.active, 'select': day.begin || day.end}"
+              :class="{'disabled': day.disabled, 'active': day.active, 'select': day.begin || day.end}"
               @click="selectOne(day)">
               <span>{{day.begin ? beginningText : day.end ? endText: '&nbsp;'}}</span>
               <span class="number" :class="{restday: day.restday, rest: day.rest, workday: day.workday}">{{day.text}}</span>
@@ -226,13 +226,13 @@ export default {
         // 判断是否禁用状态
         // 同时在非禁用状态下，才处理周末
         if (year < Ys || year > Ye) {
-          obj.disable = true
+          obj.disabled = true
         } else if (year === Ys) {
           if (month < Ms || month > Me) {
-            obj.disable = true
+            obj.disabled = true
           } else if (month === Ms) {
             if (day < Ds || day > De) {
-              obj.disable = true
+              obj.disabled = true
             } else {
               obj.rest = day > Ds && weekend
               if (day === Ds) this.customDataIndex = customIndex
@@ -270,18 +270,23 @@ export default {
   },
   methods: {
     selectOne(tar) {
-      // 点击禁用的
-      const { disable } = tar
-      if (disable) { return false }
       // 点击1号之前的空白区域
       if (!tar.text) { return false }
+      // 点击禁用的
+      const { disabled, custom } = tar
+      if (disabled) { return false }
+      // 点击自定义禁用的，能够捕获事件
+      if (custom && custom.disabled) {
+        this.$emit('selectDisabled', tar)
+        return false
+      }
       // 第一次点击
       if (this.firstTime) {
-        this.firstTime = false
+        this.firstTime = false // 设置下一次点击为第二次
         // 清空之前选择
         if (this.mIndexBegin > -1 && this.mIndexEnd > -1) {
           for (let i = this.mIndexBegin; i <= this.mIndexEnd; i++) {
-            this.months[i].days.map(day => {
+            this.months[i].days.forEach(day => {
               if (this.getTimestamp(day) === this.getTimestamp(this.firstSelectDay)) this.$set(day, 'begin', false)
               if (this.getTimestamp(day) > this.getTimestamp(this.firstSelectDay) && this.getTimestamp(day) < this.getTimestamp(this.lastSelectDay)) this.$set(day, 'active', false)
               if (this.getTimestamp(day) === this.getTimestamp(this.lastSelectDay)) this.$set(day, 'end', false)
@@ -292,25 +297,42 @@ export default {
         this.firstSelectDay = tar
         this.$set(tar, 'begin', true)
       } else { // 第二次点击
-        // 点击当天的不响应
-        if (this.getTimestamp(tar) === this.getTimestamp(this.firstSelectDay)) { return false }
+        // 点击当天的取消选择
+        if (this.getTimestamp(tar) === this.getTimestamp(this.firstSelectDay)) {
+          this.firstTime = true
+          this.$set(tar, 'begin', false)
+          this.firstSelectDay = {}
+          return false
+        }
         // 在第一次点击之前
         if (this.getTimestamp(tar) < this.getTimestamp(this.firstSelectDay)) {
           this.firstTime = true
           if (this.reverseSelect) {
-            // 取消上一次选中
-            this.$set(this.firstSelectDay, 'begin', false)
+            // 记录第一次值
+            const F = this.firstSelectDay
             // 交换值
-            this.lastSelectDay = this.firstSelectDay
+            this.lastSelectDay = F
             this.firstSelectDay = tar
-            // 按交换后的值设置开头和结尾
-            this.$set(this.firstSelectDay, 'begin', true)
-            this.$set(this.lastSelectDay, 'end', true)
             // 将中间日期设为被选状态
-            this.chooseRange().then(range => {
-              this.range = range
-              if (this.autoComplete) this.confirm()
-            })
+            this.chooseRange()
+              .then(({ range, activeDays }) => {
+                this.firstTime = true
+                // 取消上一次选中
+                this.$set(F, 'begin', false)
+                // 按交换后的值设置开头和结尾
+                this.$set(this.firstSelectDay, 'begin', true)
+                this.$set(this.lastSelectDay, 'end', true)
+                activeDays.forEach(date => this.$set(date, 'active', true))
+                this.range = range
+                if (this.autoComplete) this.confirm()
+              })
+              .catch(date => {
+                this.firstTime = false
+                // 初始点击逻辑值，使下次点击重新判断是否反选
+                this.firstSelectDay = F
+                this.lastSelectDay = {}
+                this.$emit('selectDisabled', date)
+              })
           } else {
             // 取消上一次选中
             this.$set(this.firstSelectDay, 'begin', false)
@@ -321,15 +343,21 @@ export default {
             this.firstTime = false
           }
         } else {
-          this.firstTime = true
           // 选中当前日期作为结尾
           this.lastSelectDay = tar
-          this.$set(tar, 'end', true)
           // 将中间日期设为被选状态
-          this.chooseRange().then(range => {
-            this.range = range
-            if (this.autoComplete) this.confirm()
-          })
+          this.chooseRange()
+            .then(({ range, activeDays }) => {
+              this.firstTime = true
+              this.$set(tar, 'end', true)
+              activeDays.forEach(date => this.$set(date, 'active', true))
+              this.range = range
+              if (this.autoComplete) this.confirm()
+            })
+            .catch(date => {
+              this.firstTime = false
+              this.$emit('selectDisabled', date)
+            })
         }
       }
     },
@@ -337,18 +365,24 @@ export default {
       return new Date(tar.year, tar.month - 1, tar.day).getTime()
     },
     chooseRange() {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         if (this.mIndexBegin > -1 && this.mIndexEnd > -1) {
-          let rangeList = []
+          let range = []
+          const activeDays = []
           for (let i = this.mIndexBegin; i <= this.mIndexEnd; i++) {
-            rangeList = rangeList.concat(this.months[i].days.filter(day => {
-              if (this.getTimestamp(day) > this.getTimestamp(this.firstSelectDay) && this.getTimestamp(day) < this.getTimestamp(this.lastSelectDay)) {
-                this.$set(day, 'active', true)
-                return day
+            range = range.concat(this.months[i].days.filter(date => {
+              if (this.getTimestamp(date) > this.getTimestamp(this.firstSelectDay)
+                && this.getTimestamp(date) < this.getTimestamp(this.lastSelectDay)) {
+                if (date.custom && date.custom.disabled) {
+                  reject(date)
+                } else {
+                  activeDays.push(date) // 不直接设置为激活状态，先存起来，交由外部处理。如果没有disabled才设置
+                  return date
+                }
               }
             }))
           }
-          resolve(rangeList)
+          resolve({ range, activeDays })
         } else {
           resolve(new Array())
         }
@@ -458,7 +492,7 @@ export default {
           height: 70px;
           box-shadow: inset 0 0 2px 2px white;
           transition: all .3s;
-          &.disable{
+          &.disabled{
             color: #eee;
             >span{
               color: #eee!important;

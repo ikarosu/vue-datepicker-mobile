@@ -27,9 +27,9 @@ A calendar friendly for mobile, which can select the date by the range, friendly
 | selectRangeEnd |can choose the end date. default show the end. | string | - |
 | restday | custom restday.default highlight display and show chinese "休".e.g. `['2019.5.1', '2019.5.2', '2019.5.3']` | array | - |
 | workday | custom restday.default highlight display and show chinese "班".e.g. `['2019.5.4', '2019.5.5']` | array | - |
-| customData | custom data.display custom text on date,and optional highlight. | array | - |
+| custom | custom data.It is a array of string or object of string.It return form Object Of Date. | array | - |
 
-### customData
+### custom
 Data will use today as index to 0, one by one add to after the date.
 
 If value's type is string, it will show as text.`['￥100']`
@@ -41,16 +41,19 @@ pass a object to option more
 | text | text | string |
 | highlight | highlight for text | boolean |
 | bgcolor | background color | string |
+| disabled | disabled will can't select them in selected range | boolean |
 
 e.g. `[{ highlight: true, text: '￥100' }]`
+
+More,you can added another properties,they in `custom` with Object Of Date.
 
 ## Events
 
 ### `select({ start, end, range })`
 Called after select date range.start: object, end: object, range:[object].
 range is a selected array does't include start and end.If don't have space between start and end,range is a array of null.
-#### object
-Selected date object has following keys:
+#### Object Of Date
+Selected Object Of Date has following keys:
 
 | param | description | type |
 | :-: | :- | :-: |
@@ -68,7 +71,10 @@ Selected date object has following keys:
 | active | Whether selected date between start and end | boolean |
 | end | Whether selected date end | boolean |
 ### cancel()
-After cancel, it used to hide datepicker window.
+Called after cancel, it used to hide datepicker window.
+
+### selectDisabled(date)
+Called after selected a date has `custom.disabled`.`date` is a Object Of Date.
 
 ## used demo
 ```html
@@ -87,6 +93,7 @@ After cancel, it used to hide datepicker window.
 
 ```javascript
 import DatePicker from './DatePicker'
+import { Message } from 'element-ui'
 
 export default {
   components: {
@@ -98,7 +105,7 @@ export default {
       endDate: '',
       restday: [],
       workday: ['2018-9-29', '2018-9-30'],
-      data: ['￥1300', '￥1345', { highlight: true, text: '￥888' }],
+      data: ['￥1300', '￥1345', { highlight: true, text: '￥999' }],
       show: true
     }
   },
@@ -111,15 +118,29 @@ export default {
     },
     cancel() {
       this.show = false
+    },
+    selectErr(date) {
+      console.log('date', date)
+      Message({
+        message: `can't selected this range：${date.date} is ${date.custom.dec}`,
+        type: 'error',
+        duration: 10000
+      })
     }
   },
   created() {
-    // it is working!
     setTimeout(() => {
       this.workday = ['2018-8-25', '2018-8-26', '2018-8-27']
       this.restday = ['2018-8-22', '2018-8-23', '2018-8-24']
-      this.data = ['￥1999', { text:'￥2018',bgcolor: 'lightgreen' }, { highlight: true, text: '￥666' }, { highlight: true, text: '￥888',bgcolor: 'gold' }]
-    }, 2000)
+      this.data = [
+        '￥1999',
+        { text:'￥2018', bgcolor: 'lightgreen' },
+        '', '', '', '',
+        { highlight: true, text: '￥666', bgcolor: 'gold' },
+        { highlight: true, text: '￥888'}, '', '',
+        { disabled: true, bgcolor: 'red', dec: 'Repairing' }
+      ]
+    }, 2000);
   }
 }
 ```

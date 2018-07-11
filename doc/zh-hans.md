@@ -26,7 +26,7 @@
 | selectRangeEnd | 可以选择的结束日期，默认为显示结束。格式同上。 | string | - |
 | restday | 自定义节假日，会有“休”字提示。是一个字符串数组。示例：`['2019.5.1', '2019.5.2', '2019.5.3']` | array | - |
 | workday | 自定义工作日，会有“班”字提示。是一个字符串数组。示例：`['2019.5.4', '2019.5.5']` | array | - |
-| customData | 自定义显示的文本数组，可以是一个字符串或者对象。 | array | - |
+| custom | 自定义数据，可以是一个字符串或者对象的数组。 | array | - |
 
 ### customData
 数据以当日为index 0，顺序往后加入到日历中。
@@ -40,14 +40,17 @@
 | text | 文本 | string |
 | highlight | 高亮显示文本 | boolean |
 | bgcolor | 背景颜色。接受一个合法的颜色值 | string |
+| disabled | 自定义禁用状态 | boolean |
 
 例如：`[{ highlight: true, text: '￥100' }]`
+
+此外，你还可以添加一些其他属性，可以在日期对象的`custom`属性中获得
 
 ## Events
 
 ### `select({ start, end, range })`
-选择后触发，有三个参数，start和end分别代表被选中的开始和结尾，是一个选中对象，而range是一个数组，表示出了开始和结尾中间被选中的部分，为选中对象的集合，如果开始和结尾没有间隔，得到一个空数组。
-#### 选中对象
+选择后触发，有三个参数，start和end分别代表被选中的开始和结尾，是一个日期对象，而range是一个数组，表示出了开始和结尾中间被选中的部分，为选中对象的集合，如果开始和结尾没有间隔，得到一个空数组。
+#### 日期对象
 被选中的对象包含以下属性：
 
 | 参数 | 说明 | 类型 |
@@ -61,12 +64,17 @@
 | restday | 是否为指定的休息日 | boolean |
 | workday | 是否为指定的工作日（补班） | boolean |
 | disabled | 是否禁用，可选的都为false | boolean |
-| customData | 自定义显示的文本。具体属性见上方`customData` | object |
+| custom | 自定义数据。具体属性见上方`customData` | object |
 | begin | 是否为选中的开始 | boolean |
 | active | 是否为选中中间部分 | boolean |
 | end | 是否为选中的结束 | boolean |
 ### cancel()
 取消时触发，用于手动隐藏窗口。
+
+### selectDisabled(date)
+当选择的日期段中包含`custom.disabled`时触发，`date`是一个日期对象。
+
+可通过自定义属性来得到禁用的原因，给用户提示。
 
 ## 使用示例
 ```html
@@ -85,6 +93,7 @@
 
 ```javascript
 import DatePicker from './DatePicker'
+import { Message } from 'element-ui'
 
 export default {
   components: {
@@ -96,7 +105,7 @@ export default {
       endDate: '',
       restday: [],
       workday: ['2018-9-29', '2018-9-30'],
-      data: ['￥1300', '￥1345', { highlight: true, text: '￥888' }],
+      data: ['￥1300', '￥1345', { highlight: true, text: '￥999' }],
       show: true
     }
   },
@@ -109,15 +118,29 @@ export default {
     },
     cancel() {
       this.show = false
+    },
+    selectErr(date) {
+      console.log('date', date)
+      Message({
+        message: `无法选择该范围：${date.date}为${date.custom.dec}`,
+        type: 'error',
+        duration: 10000
+      })
     }
   },
   created() {
-    // it is working!
     setTimeout(() => {
       this.workday = ['2018-8-25', '2018-8-26', '2018-8-27']
       this.restday = ['2018-8-22', '2018-8-23', '2018-8-24']
-      this.data = ['￥1999', { text:'￥2018',bgcolor: 'lightgreen' }, { highlight: true, text: '￥666' }, { highlight: true, text: '￥888',bgcolor: 'gold' }]
-    }, 2000)
+      this.data = [
+        '￥1999',
+        { text:'￥2018', bgcolor: 'lightgreen' },
+        '', '', '', '',
+        { highlight: true, text: '￥666', bgcolor: 'gold' },
+        { highlight: true, text: '￥888'}, '', '',
+        { disabled: true, bgcolor: 'red', dec: '正在维修' }
+      ]
+    }, 2000);
   }
 }
 ```
