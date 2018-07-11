@@ -11,6 +11,7 @@ A calendar friendly for mobile, which can select the date by the range, friendly
 
 | param | description | type | defalut |
 | :-: | :- | :-: | :-: |
+| single | select single date.default select a range. | boolean | false |
 | autoComplete |  After choosing the date whether to auto-complete, if false, it will show confirm button. | boolean | false |
 | mondayFirst | Whether Monday is the first-day as a week, default for Sunday. | boolean | false |
 | reverseSelect | Whether allow reverse choose date. | boolean | false |

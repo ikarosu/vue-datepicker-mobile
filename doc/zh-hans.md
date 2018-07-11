@@ -10,6 +10,7 @@
 
 | 参数 | 说明 | 类型 | 默认值 |
 | :-: | :- | :-: | :-: |
+| single | 是否单独选择一个日期，默认选择一个范围 | boolean | false |
 | autoComplete | 是否选择日期后自动确认，false时将显示确认按钮，由用户手动点击确认。 | boolean | false |
 | mondayFirst | 是否周一开头。默认周日开头 | boolean | false |
 | reverseSelect | 是否允许往前反选日期 | boolean | false |
