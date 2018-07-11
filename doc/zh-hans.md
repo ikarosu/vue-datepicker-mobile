@@ -85,7 +85,7 @@
   :restday="restday"
   :workday="workday"
   :display="show"
-  :customData="data"
+  :custom="data"
   @select="select"
   @cancel="cancel"
   autoComplete/>

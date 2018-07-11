@@ -85,7 +85,7 @@ Called after selected a date has `custom.disabled`.`date` is a Object Of Date.
   :restday="restday"
   :workday="workday"
   :display="show"
-  :customData="data"
+  :custom="data"
   @select="select"
   @cancel="cancel"
   autoComplete/>
