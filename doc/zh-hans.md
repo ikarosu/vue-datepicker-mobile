@@ -28,7 +28,7 @@
 | workday | 自定义工作日，会有“班”字提示。是一个字符串数组。示例：`['2019.5.4', '2019.5.5']` | array | - |
 | custom | 自定义数据，可以是一个字符串或者对象的数组。 | array | - |
 
-### customData
+### custom
 数据以当日为index 0，顺序往后加入到日历中。
 
 当是字符串的时候，直接显示文本。 `['￥100']`
@@ -64,7 +64,7 @@
 | restday | 是否为指定的休息日 | boolean |
 | workday | 是否为指定的工作日（补班） | boolean |
 | disabled | 是否禁用，可选的都为false | boolean |
-| custom | 自定义数据。具体属性见上方`customData` | object |
+| custom | 自定义数据。具体属性见上方`custom` | object |
 | begin | 是否为选中的开始 | boolean |
 | active | 是否为选中中间部分 | boolean |
 | end | 是否为选中的结束 | boolean |

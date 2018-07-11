@@ -66,7 +66,7 @@ Selected Object Of Date has following keys:
 | restday | Whether custom restday | boolean |
 | workday | Whether custom workday | boolean |
 | disabled | Whether disabled | boolean |
-| customData | custom data.See `customData` | object |
+| custom | custom data.See `custom` | object |
 | begin | Whether selected date start | boolean |
 | active | Whether selected date between start and end | boolean |
 | end | Whether selected date end | boolean |
