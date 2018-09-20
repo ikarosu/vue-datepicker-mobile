@@ -14,7 +14,10 @@
             : i == 0 || i == 6 ? 'tomato' : ''}">{{text}}</span>
       </div>
       <main>
-        <section class="month" v-for="(item, i) in months" :key="i">
+        <section class="aki-month" v-for="(item, i) in months" :key="i"
+          :data-date="new Date(item.year, Number(item.month)-1)"
+          :data-year="item.year"
+          :data-month="item.month">
           <header>{{item.year}}年 {{item.month}}月</header>
           <div class="day-wrap">
             <div class="day"
@@ -132,7 +135,9 @@ export default {
       lastSelectDay: {},
       rangeList: [],
       customIndex: 0,
-      range: []
+      range: [],
+      doms: [],
+      observer: null,
     }
   },
   computed: {
@@ -185,9 +190,22 @@ export default {
     },
     custom() {
       this.setcustom()
+    },
+    months() {
+      this.doms = Array.from(document.querySelectorAll('.aki-month'))
+    },
+    display(show) {
+      if (show) this.doms.forEach(dom => this.observer.observe(dom))
     }
   },
   created() {
+    this.observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.intersectionRatio <= 0) return false
+        const { year, month, date } = entry.target.dataset
+        this.$emit('viewport', { year, month, date })
+      })
+    })
     const months = []
     const [Y, M] = this.displayRangeStart.split('-').map(Number)
     const [Ys, Ms, Ds] = this.selectRangeStart.split('-').map(Number)
@@ -489,7 +507,7 @@ export default {
   main{
     flex: 1;
     overflow-y: scroll;
-    .month{
+    .aki-month{
       >header{
         position: sticky;
         top: 0;

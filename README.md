@@ -1,6 +1,6 @@
 # vue-datepicker-mobile
 [中文版](/doc/zh-hans.md)
-
+Sorry for my English.
 A calendar friendly for mobile, which can select the date by the range, friendly for mobile.It is typically used for hotel. 
 
 ![e.g.](https://github.com/ikarosu/vue-datepicker-mobile/blob/master/git/eg.png?raw=true)
@@ -77,6 +77,9 @@ Called after cancel, it used to hide datepicker window.
 ### selectDisabled(date)
 Called after selected a date has `custom.disabled`.`date` is a Object Of Date.
 
+### viewport({ year, month, date })
+Called when somemonth in viewport with window, return current date.
+
 ## used demo
 ```
 npm i aki-datepicker
@@ -100,6 +103,7 @@ Vue.use(AkiDate)
   @select="select"
   @cancel="cancel"
   @selectDisabled="selectErr"
+  @viewport="viewport"
   autoComplete/>
 ```
 
@@ -134,6 +138,9 @@ export default {
         type: 'error',
         duration: 10000
       })
+    },
+    viewport({ year, month, date }) {
+      console.log('现在出现在视线内的是：', `${year}-${month}`)
     }
   },
   created() {

@@ -77,6 +77,9 @@
 
 可通过自定义属性来得到禁用的原因，给用户提示。
 
+### viewport({ year, month, date })
+当某一月份出现在视野范围内时触发，返回触发的日期
+
 ## 使用示例
 ```
 npm i aki-datepicker
@@ -100,6 +103,7 @@ Vue.use(AkiDate)
   @select="select"
   @cancel="cancel"
   @selectDisabled="selectErr"
+  @viewport="viewport"
   autoComplete/>
 ```
 
@@ -134,6 +138,9 @@ export default {
         type: 'error',
         duration: 10000
       })
+    },
+    viewport({ year, month, date }) {
+      console.log('现在出现在视线内的是：', `${year}-${month}`)
     }
   },
   created() {
