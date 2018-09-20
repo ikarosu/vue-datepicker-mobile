@@ -79,7 +79,7 @@ Called after selected a date has `custom.disabled`.`date` is a Object Of Date.
 
 ## used demo
 ```
-npm i vue-datepicker-mobile
+npm i aki-datepicker
 ```
 
 ```javascript

@@ -79,7 +79,7 @@
 
 ## 使用示例
 ```
-npm i vue-datepicker-mobile
+npm i aki-datepicker
 ```
 
 ```javascript
