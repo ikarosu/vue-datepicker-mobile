@@ -78,28 +78,35 @@ Called after cancel, it used to hide datepicker window.
 Called after selected a date has `custom.disabled`.`date` is a Object Of Date.
 
 ## used demo
+```
+npm i vue-datepicker-mobile
+```
+
+```javascript
+// main.js
+import AkiDate from 'aki-datepicker'
+Vue.use(AkiDate)
+```
+
 ```html
 <input type="date" @touchstart="show = true" v-model="startDate" readonly>
 -
 <input type="date" @touchstart="show = true" v-model="endDate" readonly>
-<DatePicker
+<aki-date
   :restday="restday"
   :workday="workday"
   :display="show"
   :custom="data"
   @select="select"
   @cancel="cancel"
+  @selectDisabled="selectErr"
   autoComplete/>
 ```
 
 ```javascript
-import DatePicker from './DatePicker'
 import { Message } from 'element-ui'
 
 export default {
-  components: {
-    DatePicker
-  },
   data() {
     return {
       startDate: '',

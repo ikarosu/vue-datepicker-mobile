@@ -1,0 +1,29 @@
+{
+  "name": "aki-datepicker",
+  "version": "0.10.0",
+  "description": "A calendar friendly for mobile, which can select the date by the range.It is typically used for hotel.",
+  "main": "index.js",
+  "directories": {
+    "doc": "doc"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ikarosu/vue-datepicker-mobile.git"
+  },
+  "keywords": [
+    "vue",
+    "datepicker",
+    "calendar",
+    "mobile",
+    "hotel"
+  ],
+  "author": "Clear Aki",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ikarosu/vue-datepicker-mobile/issues"
+  },
+  "homepage": "https://github.com/ikarosu/vue-datepicker-mobile#readme"
+}

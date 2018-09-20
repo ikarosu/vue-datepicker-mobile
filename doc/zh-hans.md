@@ -78,28 +78,35 @@
 可通过自定义属性来得到禁用的原因，给用户提示。
 
 ## 使用示例
+```
+npm i vue-datepicker-mobile
+```
+
+```javascript
+// main.js
+import AkiDate from 'aki-datepicker'
+Vue.use(AkiDate)
+```
+
 ```html
 <input type="date" @touchstart="show = true" v-model="startDate" readonly>
 -
 <input type="date" @touchstart="show = true" v-model="endDate" readonly>
-<DatePicker
+<aki-date
   :restday="restday"
   :workday="workday"
   :display="show"
   :custom="data"
   @select="select"
   @cancel="cancel"
+  @selectDisabled="selectErr"
   autoComplete/>
 ```
 
 ```javascript
-import DatePicker from './DatePicker'
 import { Message } from 'element-ui'
 
 export default {
-  components: {
-    DatePicker
-  },
   data() {
     return {
       startDate: '',
