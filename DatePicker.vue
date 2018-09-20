@@ -428,8 +428,8 @@ export default {
           // 跳过1号之前的
           if (v.text && data) {
             const type = typeof data
-            if (type === 'string') v.custom = { text: data }
-            else if (type === 'object') v.custom = data
+            if (type === 'string') this.$set(v, 'custom', { text: data })
+            else if (type === 'object')  this.$set(v, 'custom', data)
             else throw `custom数组每项的类型应该是String或Object，但是得到的是${type}`
           }
         }
