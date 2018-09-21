@@ -199,13 +199,6 @@ export default {
     }
   },
   created() {
-    this.observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.intersectionRatio <= 0) return false
-        const { year, month, date } = entry.target.dataset
-        this.$emit('viewport', { year, month, date })
-      })
-    })
     const months = []
     const [Y, M] = this.displayRangeStart.split('-').map(Number)
     const [Ys, Ms, Ds] = this.selectRangeStart.split('-').map(Number)
@@ -292,6 +285,17 @@ export default {
     }
     this.months = months
     this.setcustom()
+    try {
+      this.observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.intersectionRatio <= 0) return false
+          const { year, month, date } = entry.target.dataset
+          this.$emit('viewport', { year, month, date })
+        })
+      })
+    } catch (error) {
+      throw error
+    }
   },
   methods: {
     selectOne(tar) {
@@ -509,6 +513,7 @@ export default {
     overflow-y: scroll;
     .aki-month{
       >header{
+        position: -webkit-sticky;
         position: sticky;
         top: 0;
         padding: 5px;
