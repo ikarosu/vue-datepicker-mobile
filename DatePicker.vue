@@ -27,7 +27,7 @@
               @click="selectOne(day)">
               <span>{{day.begin ? beginningText : day.end ? endText: '&nbsp;'}}</span>
               <span class="number" :class="{restday: day.restday, rest: day.rest, workday: day.workday}">{{day.text}}</span>
-              <span v-if="day.custom" :class="{rest: day.custom.highlight}">{{day.custom.text}}</span>
+              <span v-if="day.custom" :class="{rest: day.custom.highlight}">{{day.custom.text||'&nbsp;'}}</span>
               <span v-else>&nbsp;</span>
             </div>
           </div>
@@ -305,7 +305,7 @@ export default {
       const { disabled, custom } = tar
       if (disabled) { return false }
       // 点击自定义禁用的，能够捕获事件
-      if (custom && custom.disabled) {
+      if (custom && custom.disabled && this.firstTime) {
         this.$emit('selectDisabled', tar)
         return false
       }
@@ -345,6 +345,7 @@ export default {
           // 在第一次点击之前
           if (this.getTimestamp(tar) < this.getTimestamp(this.firstSelectDay)) {
             this.firstTime = true
+            // 可以反选
             if (this.reverseSelect) {
               // 记录第一次值
               const F = this.firstSelectDay
