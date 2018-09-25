@@ -1,10 +1,10 @@
 <template>
-  <section class="wrap" @touchstart.self="$emit('cancel')" :class="{hide: !display}">
+  <section class="wrap" @click.self="$emit('cancel')" :class="{hide: !display}">
     <div class="content">
       <header>
-        <a class="left" @touchstart="$emit('cancel')">取消</a>
+        <a class="left" @click="$emit('cancel')">取消</a>
         <strong>选择日期</strong>
-        <a v-if="!autoComplete" class="right" @touchstart="confirm">确认</a>
+        <a v-if="!autoComplete" class="right" @click="confirm">确认</a>
       </header>
       <div class="week-text">
         <span v-for="(text, i) in weekTexts"
@@ -492,6 +492,7 @@ export default {
       position: absolute;
       top: 10px;
       font-size: 14px;
+      cursor: pointer;
       &.left{
         left: 10px;
       }
