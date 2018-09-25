@@ -3,7 +3,9 @@
 移动端友好的日历，用于酒店入住，可选择范围
 
 ![e.g.](https://github.com/ikarosu/vue-datepicker-mobile/blob/master/git/eg.png?raw=true)
+
 [Live Demo](https://ikarosu.github.io/datepicker/)
+
 ![demo](https://github.com/ikarosu/vue-datepicker-mobile/blob/master/git/qr.png?raw=true)
 
 ## 属性
@@ -80,6 +82,8 @@
 ### viewport({ year, month, date })
 当某一月份出现在视野范围内时触发，返回触发的日期
 
+\* Safari 默认不生效，如果你需要兼容Safari，你需要一个[polyfill](https://github.com/w3c/IntersectionObserver/tree/master/polyfill)
+
 ## 使用示例
 ```
 npm i aki-datepicker
@@ -92,9 +96,9 @@ Vue.use(AkiDate)
 ```
 
 ```html
-<input type="date" @touchstart="show = true" v-model="startDate" readonly>
+<input type="date" @click="show = true" v-model="startDate" readonly>
 -
-<input type="date" @touchstart="show = true" v-model="endDate" readonly>
+<input type="date" @click="show = true" v-model="endDate" readonly>
 <aki-date
   :restday="restday"
   :workday="workday"

@@ -1,10 +1,14 @@
 # vue-datepicker-mobile
 [中文版](/doc/zh-hans.md)
+
 Sorry for my English.
+
 A calendar friendly for mobile, which can select the date by the range, friendly for mobile.It is typically used for hotel. 
 
 ![e.g.](https://github.com/ikarosu/vue-datepicker-mobile/blob/master/git/eg.png?raw=true)
+
 [Live Demo](https://ikarosu.github.io/datepicker/)
+
 ![demo qr](https://github.com/ikarosu/vue-datepicker-mobile/blob/master/git/qr.png?raw=true)
 
 ## Attr
@@ -80,6 +84,8 @@ Called after selected a date has `custom.disabled`.`date` is a Object Of Date.
 ### viewport({ year, month, date })
 Called when somemonth in viewport with window, return current date.
 
+\* Safari is not working.If you need working for Safari, you need a [polyfill](https://github.com/w3c/IntersectionObserver/tree/master/polyfill).
+
 ## used demo
 ```
 npm i aki-datepicker
@@ -92,9 +98,9 @@ Vue.use(AkiDate)
 ```
 
 ```html
-<input type="date" @touchstart="show = true" v-model="startDate" readonly>
+<input type="date" @click="show = true" v-model="startDate" readonly>
 -
-<input type="date" @touchstart="show = true" v-model="endDate" readonly>
+<input type="date" @click="show = true" v-model="endDate" readonly>
 <aki-date
   :restday="restday"
   :workday="workday"
