@@ -19,7 +19,7 @@
 | beginningText | 选中的起点日期文本 | string | '入住' |
 | endText | 选中的终点日期文本 | string | '离店' |
 
-## Prop
+## Props
 | 参数 | 说明 | 类型 | 默认值 |
 | :-: | :- | :-: | :-: |
 | display | 显示这个日期选择器 | boolean | false |
@@ -43,6 +43,7 @@
 | text | 文本 | string |
 | highlight | 高亮显示文本 | boolean |
 | bgcolor | 背景颜色。接受一个合法的颜色值 | string |
+| bdcolor | 边框颜色。接受一个合法的颜色值 | string |
 | disabled | 自定义禁用状态 | boolean |
 
 例如：`[{ highlight: true, text: '￥100' }]`
@@ -84,6 +85,26 @@
 
 \* Safari 默认不生效，如果你需要兼容Safari，你需要一个[polyfill](https://github.com/w3c/IntersectionObserver/tree/master/polyfill)
 
+### click(target[, start])
+点击了日历上一个可选日期时触发。
+
+只有single为false时（默认），有第二个参数，如果是第一次点击（选择起点），则start为true。
+
+### clickStart(target)
+只有single为false时（默认）触发。
+
+点击了起点时触发。
+
+### clickEnd(target)
+只有single为false时（默认）触发。
+
+点击了终点时触发。
+
+## Methods
+
+### setData(custom, date)
+给某一个日期设置自定义数据。date为一个日期字符串，YYYY-MM-DD。
+
 ## 使用示例
 ```
 npm i aki-datepicker
@@ -108,6 +129,9 @@ Vue.use(AkiDate)
   @cancel="cancel"
   @selectDisabled="selectErr"
   @viewport="viewport"
+  @click="click"
+  @clickStart="clickStart"
+  @clickEnd="clickEnd"
   autoComplete/>
 ```
 
@@ -137,14 +161,24 @@ export default {
     },
     selectErr(date) {
       console.log('date', date)
-      Message({
-        message: `无法选择该范围：${date.date}为${date.custom.dec}`,
-        type: 'error',
-        duration: 10000
-      })
+      Snackbars(`无法选择该范围：${date.date}为${date.custom.dec}`)
     },
     viewport({ year, month, date }) {
       console.log('现在出现在视线内的是：', `${year}-${month}`)
+    },
+    click(target, start) {
+      console.log('click', target)
+      console.log('click', start)
+    },
+    clickStart(tar) {
+      console.log('start', tar)
+      // 设置一周后那天的边框颜色为orange
+      const time = new Date(tar.date).getTime() + 7 * 24 * 60 * 60 * 1000
+      const date = new Date(time).toJSON().split('T')[0]
+      this.$refs.date.setData({ bdcolor: 'orange' }, date)
+    },
+    clickEnd(tar) {
+      console.log('end', tar)
     }
   },
   created() {

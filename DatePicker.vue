@@ -22,13 +22,13 @@
           <div class="day-wrap">
             <div class="day"
               v-for="(day, j) in item.days" :key="j"
-              :style="{'background-color': day.custom&&day.custom.bgcolor}"
+              :style="{'background-color': day.custom.bgcolor,
+              'border-color': day.custom.bdcolor}"
               :class="{'disabled': day.disabled, 'active': day.active, 'select': day.begin || day.end}"
               @click="selectOne(day)">
               <span>{{day.begin ? beginningText : day.end ? endText: '&nbsp;'}}</span>
               <span class="number" :class="{restday: day.restday, rest: day.rest, workday: day.workday}">{{day.text}}</span>
-              <span v-if="day.custom" :class="{rest: day.custom.highlight}">{{day.custom.text||'&nbsp;'}}</span>
-              <span v-else>&nbsp;</span>
+              <span :class="{rest: day.custom.highlight}">{{day.custom.text||'&nbsp;'}}</span>
             </div>
           </div>
         </section>
@@ -224,13 +224,14 @@ export default {
       if (this.mondayFirst) placeholder = placeholder === 0 ? 6 : placeholder - 1
       for (let j = 0; j < placeholder; j++) {
         customIndex++
-        days.push({})
+        days.push({ custom: {} })
       }
       // 得到当月总天数
       const daySum = new Date(year, month, 0).getDate()
       // 循环出每一天
       for (let day = 1; day <= daySum; day++) {
         const obj = {} // 存放的数据将会在 template中用到
+        obj.custom = {}
         obj.year = year
         obj.month = month
         obj.day = day
@@ -310,6 +311,7 @@ export default {
         return false
       }
       if (this.single) {
+        this.$emit('click', tar)
         this.$set(this.lastSelectDay, 'begin', false)
         // 选中当前
         this.firstSelectDay = tar
@@ -320,6 +322,9 @@ export default {
       } else {
         // 第一次点击
         if (this.firstTime) {
+          this.$emit('click', tar, true)
+          // this.$emit('click', { target: tar, start: true })
+          this.$emit('clickStart', tar)
           this.firstTime = false // 设置下一次点击为第二次
           // 清空之前选择
           if (this.mIndexBegin > -1 && this.mIndexEnd > -1) {
@@ -335,6 +340,8 @@ export default {
           this.firstSelectDay = tar
           this.$set(tar, 'begin', true)
         } else { // 第二次点击
+          this.$emit('click', { target: tar, start: false })
+          this.$emit('clickEnd', tar)
           // 点击当天的取消选择
           if (this.getTimestamp(tar) === this.getTimestamp(this.firstSelectDay)) {
             this.firstTime = true
@@ -457,7 +464,29 @@ export default {
           }
         }
       }
-    }
+    },
+    setData(data, date) {
+      const delimiters = ['-', '/', ',']
+      let delimiter
+      const isDateStr = delimiters.some(d => (delimiter = d) && date.includes(d))
+      if (!isDateStr) throw `Date format error.Got "${date}".It's should be like "YYYY-MM-DD".`
+      const [Y, M, D] = date.split(delimiter).map(Number)
+      let target
+      this.months.some(item => {
+        target = item.days.filter(({ year, month, day }) => year === Y && month === M && day === D)
+        return target.length > 0
+      })
+      if (target.length) {
+        for (const key in data) {
+          if (data.hasOwnProperty(key)) {
+            const value = data[key]
+            this.$set(target[0].custom, key, value)
+          }
+        }
+      } else {
+        throw `Date format error.Got "${date}".It's should be like "YYYY-MM-DD".`
+      }
+    },
   }
 }
 </script>
@@ -533,6 +562,8 @@ export default {
           width: 100 / 7vw;
           height: 70px;
           box-shadow: inset 0 0 2px 2px white;
+          box-sizing: border-box;
+          border: solid 1px #fff;
           transition: all .3s;
           &.disabled{
             color: #eee;
