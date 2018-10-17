@@ -22,7 +22,7 @@ A calendar friendly for mobile, which can select the date by the range, friendly
 | beginningText | text of beginning for selected | string | '入住' |
 | endText | text of end for selected | string | '离店' |
 
-## Prop
+## Props
 | param | description | type | defalut |
 | :-: | :- | :-: | :-: |
 | display | display state, show or hide datepicker window. | boolean | false |
@@ -46,6 +46,7 @@ pass a object to option more
 | text | text | string |
 | highlight | highlight for text | boolean |
 | bgcolor | background color | string |
+| bdcolor | border color | string |
 | disabled | disabled will can't select them in selected range | boolean |
 
 e.g. `[{ highlight: true, text: '￥100' }]`
@@ -86,6 +87,25 @@ Called when somemonth in viewport with window, return current date.
 
 \* Safari is not working.If you need working for Safari, you need a [polyfill](https://github.com/w3c/IntersectionObserver/tree/master/polyfill).
 
+### click(target[, start])
+Click a allow selected date.
+
+Only when 'single' is 'false'(default) have 'start' param,if this click is select a start of range,the 'start' is 'true'
+
+### clickStart(target)
+Only when 'single' is 'false'(default) called.
+
+this click is select a start of range.
+
+### clickEnd(target)
+Only when 'single' is 'false'(default) called.
+
+this click is select a end of range.
+
+## Methods
+
+### setData(custom, date)
+Set custom data for one day.the 'date' is date string like: YYYY-MM-DD.
 ## used demo
 ```
 npm i aki-datepicker
@@ -110,11 +130,14 @@ Vue.use(AkiDate)
   @cancel="cancel"
   @selectDisabled="selectErr"
   @viewport="viewport"
+  @click="click"
+  @clickStart="clickStart"
+  @clickEnd="clickEnd"
   autoComplete/>
 ```
 
 ```javascript
-import { Message } from 'element-ui'
+import { Snackbars } from 'clearaki-ui'
 
 export default {
   data() {
@@ -139,14 +162,24 @@ export default {
     },
     selectErr(date) {
       console.log('date', date)
-      Message({
-        message: `can't selected this range：${date.date} is ${date.custom.dec}`,
-        type: 'error',
-        duration: 10000
-      })
+      Snackbars(`无法选择该范围：${date.date}为${date.custom.dec}`)
     },
     viewport({ year, month, date }) {
-      console.log('现在出现在视线内的是：', `${year}-${month}`)
+      console.log('Now in line of sight is:', `${year}-${month}`)
+    },
+    click(target, start) {
+      console.log('click', target)
+      console.log('click', start)
+    },
+    clickStart(tar) {
+      console.log('start', tar)
+      // set the border color of day after a aweek is orange
+      const time = new Date(tar.date).getTime() + 7 * 24 * 60 * 60 * 1000
+      const date = new Date(time).toJSON().split('T')[0]
+      this.$refs.date.setData({ bdcolor: 'orange' }, date)
+    },
+    clickEnd(tar) {
+      console.log('end', tar)
     }
   },
   created() {
