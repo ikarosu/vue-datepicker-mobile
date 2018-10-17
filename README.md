@@ -122,6 +122,7 @@ Vue.use(AkiDate)
 -
 <input type="date" @click="show = true" v-model="endDate" readonly>
 <aki-date
+  ref="date"
   :restday="restday"
   :workday="workday"
   :display="show"
