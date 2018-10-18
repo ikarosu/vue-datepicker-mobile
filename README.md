@@ -33,6 +33,7 @@ A calendar friendly for mobile, which can select the date by the range, friendly
 | restday | custom restday.default highlight display and show chinese "休".e.g. `['2019.5.1', '2019.5.2', '2019.5.3']` | array | - |
 | workday | custom restday.default highlight display and show chinese "班".e.g. `['2019.5.4', '2019.5.5']` | array | - |
 | custom | custom data.It is a array of string or object of string.It return form Object Of Date. | array | - |
+| initPosition | Init position for visible month.Allow a string of date,default is this month. | string | - |
 
 ### custom
 Data will use today as index to 0, one by one add to after the date.

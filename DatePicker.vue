@@ -13,7 +13,7 @@
             ? i == 5 || i == 6 ? 'tomato' : ''
             : i == 0 || i == 6 ? 'tomato' : ''}">{{text}}</span>
       </div>
-      <main>
+      <main ref="layout">
         <section class="aki-month" v-for="(item, i) in months" :key="i"
           :data-date="new Date(item.year, Number(item.month)-1)"
           :data-year="item.year"
@@ -39,15 +39,20 @@
 
 <script>
 class DateHelper {
-  constructor() {}
+  constructor(str = Date.now()) {
+    this.Date = new Date(str)
+  }
   get year() {
-    return new Date().getFullYear()
+    return this.Date.getFullYear()
   }
   get month() {
-    return new Date().getMonth() + 1
+    return this.Date.getMonth() + 1
   }
   get day() {
-    return new Date().getDate()
+    return this.Date.getDate()
+  }
+  get time() {
+    return this.Date.getTime()
   }
   get date() {
     return `${this.year}-${this.month}-${this.day}`
@@ -109,7 +114,7 @@ export default {
     // 可选择的结束日期
     selectRangeEnd: {
       type: String,
-      default() { return '9999-99-99' }
+      default() { return '9999-12-31' }
     },
     // 自定义数据
     custom: {
@@ -125,6 +130,10 @@ export default {
     endText: {
       type: String,
       default() { return '离店' }
+    },
+    initPosition: {
+      type: String,
+      default() { return new DateHelper().date }
     }
   },
   data() {
@@ -155,6 +164,22 @@ export default {
     },
     mIndexEnd() {
       return this.months.findIndex(v => v.year === this.lastSelectDay.year && v.month === this.lastSelectDay.month)
+    },
+    seEnd() {
+      let date
+      switch (this.selectRangeEnd) {
+        case 'today':
+          date = new DateHelper().date
+          break
+        case '':
+          date = '9999-12-31'
+          break
+      
+        default:
+          date = this.selectRangeEnd
+          break
+      }
+      return date
     }
   },
   watch: {
@@ -200,20 +225,17 @@ export default {
   },
   created() {
     const months = []
-    const [Y, M] = this.displayRangeStart.split('-').map(Number)
-    const [Ys, Ms, Ds] = this.selectRangeStart.split('-').map(Number)
-    const [Ye, Me, De] = this.selectRangeEnd.split('-').map(Number)
-    let [year, month] = [Y, M]
     let customIndex = 0
+    let [Y, M] = this.displayRangeStart.split('-').map(Number)
+    let [year, month] = [Y, M]
     // 循环出月份
     for (let i = 0; i < this.displayRange; i++) {
-      // 满 13月进 1年
+      // 每满 13月
       if (M + i > 12) {
-        year = Y + 1
-        month = M + i - 12
-      } else {
-        month = M + i
+        M -= 12 // 月份从1开始
+        year = ++Y // 进 1年
       }
+      month = M + i
       const days = [] // 每一天的数据对象会放入该数组
       // 通过占位把 1号排到实际的星期位置
       // 默认周日开头情况下，今天是星期几，就需要几个占位符
@@ -244,24 +266,12 @@ export default {
         const weekend = weekday === 6 || weekday === 0
         // 判断是否禁用状态
         // 同时在非禁用状态下，才处理周末
-        if (year < Ys || year > Ye) {
-          obj.disabled = true
-        } else if (year === Ys) {
-          if (month < Ms || month > Me) {
-            obj.disabled = true
-          } else if (month === Ms) {
-            if (day < Ds || day > De) {
-              obj.disabled = true
-            } else {
-              obj.rest = day > Ds && weekend
-              if (day === Ds) this.customIndex = customIndex
-            }
-          } else {
-            obj.rest = weekend
-          }
-        } else {
-          obj.rest = weekend
-        }
+        const sTime = new DateHelper(this.selectRangeStart).time
+        const currentTime = new DateHelper(obj.date).time
+        const eTime = new DateHelper(this.seEnd).time
+        if (currentTime - sTime < 0 || eTime - currentTime < 0) obj.disabled = true
+        else obj.rest = weekend
+        if (currentTime === sTime) this.customIndex = customIndex
         // 自定义休息日
         if (this.restday.length) {
           this.restday.forEach(date => {
@@ -298,6 +308,19 @@ export default {
       throw error
     }
   },
+  mounted() {
+    const [dY, dS] = this.displayRangeStart.split('-').map(Number)
+    const [pY, pS] = this.initPosition.split('-').map(Number)
+    let index = 0
+    index += pS > dS ? (pY - dY) * 12 : (pY - dY - 1) * 12
+    index += pS - dS
+    let top = 0
+    if (index > this.$refs.layout.children.length) index = this.$refs.layout.children.length
+    for (let i = 0; i < index; i++) {
+      top += this.$refs.layout.children[i].offsetHeight
+    }
+    this.$refs.layout.scrollTop = top
+  },
   methods: {
     selectOne(tar) {
       // 点击1号之前的空白区域
@@ -323,7 +346,6 @@ export default {
         // 第一次点击
         if (this.firstTime) {
           this.$emit('click', tar, true)
-          // this.$emit('click', { target: tar, start: true })
           this.$emit('clickStart', tar)
           this.firstTime = false // 设置下一次点击为第二次
           // 清空之前选择
@@ -340,11 +362,10 @@ export default {
           this.firstSelectDay = tar
           this.$set(tar, 'begin', true)
         } else { // 第二次点击
-          this.$emit('click', { target: tar, start: false })
-          this.$emit('clickEnd', tar)
           // 点击当天的取消选择
           if (this.getTimestamp(tar) === this.getTimestamp(this.firstSelectDay)) {
             this.firstTime = true
+            this.$emit('click', { target: tar, start: false })
             this.$set(tar, 'begin', false)
             this.firstSelectDay = {}
             return false
@@ -354,6 +375,8 @@ export default {
             this.firstTime = true
             // 可以反选
             if (this.reverseSelect) {
+              this.$emit('click', { target: tar, start: false })
+              this.$emit('clickEnd', tar)
               // 记录第一次值
               const F = this.firstSelectDay
               // 交换值
@@ -380,6 +403,8 @@ export default {
                   this.$emit('selectDisabled', date)
                 })
             } else {
+              this.$emit('click', { target: tar, start: true })
+              this.$emit('clickStart', tar)
               // 取消上一次选中
               this.$set(this.firstSelectDay, 'begin', false)
               // 选中本次点击
@@ -389,6 +414,8 @@ export default {
               this.firstTime = false
             }
           } else {
+            this.$emit('click', { target: tar, start: false })
+            this.$emit('clickEnd', tar)
             // 选中当前日期作为结尾
             this.lastSelectDay = tar
             // 将中间日期设为被选状态
@@ -466,11 +493,7 @@ export default {
       }
     },
     setData(data, date) {
-      const delimiters = ['-', '/', ',']
-      let delimiter
-      const isDateStr = delimiters.some(d => (delimiter = d) && date.includes(d))
-      if (!isDateStr) throw `Date format error.Got "${date}".It's should be like "YYYY-MM-DD".`
-      const [Y, M, D] = date.split(delimiter).map(Number)
+      const [Y, M, D] = new DateHelper(date).date.split('-').map(Number)
       let target
       this.months.some(item => {
         target = item.days.filter(({ year, month, day }) => year === Y && month === M && day === D)
