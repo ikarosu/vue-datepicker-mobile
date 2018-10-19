@@ -486,11 +486,12 @@ export default {
         let days = []
         this.months.forEach(v => days = days.concat(v.days))
         // 从记录的index位置开始遍历日期，从0开始遍历自定义数组
-        for (let i = this.customIndex, j = 0; j < this.custom.length; i++, j++) {
+        for (let i = this.customIndex, j = 0; j < this.custom.length; i++) {
           const v = days[i]
           const data = this.custom[j]
           // 跳过1号之前的
-          if (v.text && data) {
+          if (v.text) {
+            j++
             const type = typeof data
             if (type === 'string') this.$set(v, 'custom', { text: data })
             else if (type === 'object') this.$set(v, 'custom', data)
