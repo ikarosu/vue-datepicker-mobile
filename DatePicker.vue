@@ -406,6 +406,12 @@ export default {
                   this.$emit('selectDisabled', date)
                 })
             } else {
+              // 将下一次点击设为第二次
+              this.firstTime = false
+              if (custom && custom.disabled) {
+                this.$emit('selectDisabled', tar)
+                return
+              }
               this.$emit('click', { target: tar, start: true })
               this.$emit('clickStart', tar)
               // 取消上一次选中
@@ -413,8 +419,6 @@ export default {
               // 选中本次点击
               this.$set(tar, 'begin', true)
               this.firstSelectDay = tar
-              // 将下一次点击设为第二次
-              this.firstTime = false
             }
           } else {
             this.$emit('click', { target: tar, start: false })
@@ -489,7 +493,7 @@ export default {
           if (v.text && data) {
             const type = typeof data
             if (type === 'string') this.$set(v, 'custom', { text: data })
-            else if (type === 'object')  this.$set(v, 'custom', data)
+            else if (type === 'object') this.$set(v, 'custom', data)
             else throw `custom数组每项的类型应该是String或Object，但是得到的是${type}`
           }
         }
