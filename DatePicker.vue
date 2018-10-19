@@ -46,10 +46,12 @@ class DateHelper {
     return this.Date.getFullYear()
   }
   get month() {
-    return this.Date.getMonth() + 1
+    const m = this.Date.getMonth() + 1
+    return m < 10 ? `0${m}` : m
   }
   get day() {
-    return this.Date.getDate()
+    const d = this.Date.getDate()
+    return d < 10 ? `0${d}` : d
   }
   get time() {
     return this.Date.getTime()
@@ -301,7 +303,7 @@ export default {
         entries.forEach(entry => {
           if (entry.intersectionRatio <= 0) return false
           const { year, month, uct } = entry.target.dataset
-          this.$emit('viewport', { year, month, uct, date: `${year}-${month}-01` })
+          this.$emit('viewport', { year, month, uct, date: new DateHelper(`${year}-${month}-1`).date })
         })
       })
     } catch (error) {
