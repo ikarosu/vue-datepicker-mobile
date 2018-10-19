@@ -15,7 +15,7 @@
       </div>
       <main ref="layout">
         <section class="aki-month" v-for="(item, i) in months" :key="i"
-          :data-date="new Date(item.year, Number(item.month)-1)"
+          :data-uct="new Date(item.year, Number(item.month)-1)"
           :data-year="item.year"
           :data-month="item.month">
           <header>{{item.year}}年 {{item.month}}月</header>
@@ -300,8 +300,8 @@ export default {
       this.observer = new IntersectionObserver(entries => {
         entries.forEach(entry => {
           if (entry.intersectionRatio <= 0) return false
-          const { year, month, date } = entry.target.dataset
-          this.$emit('viewport', { year, month, date })
+          const { year, month, uct } = entry.target.dataset
+          this.$emit('viewport', { year, month, uct, date: `${year}-${month}-01` })
         })
       })
     } catch (error) {
@@ -309,6 +309,7 @@ export default {
     }
   },
   mounted() {
+    // 设置scrollTop，使其初始进来就定位到想要的位置，而不是显示列表的头部
     const [dY, dS] = this.displayRangeStart.split('-').map(Number)
     const [pY, pS] = this.initPosition.split('-').map(Number)
     let index = 0
