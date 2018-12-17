@@ -223,92 +223,16 @@ export default {
     },
     display(show) {
       if (show) this.doms.forEach(dom => this.observer.observe(dom))
-    }
+    },
+    displayRangeStart() {
+      this.constructionBody()
+    },
+    selectRangeStart() {
+      this.constructionBody()
+    },
   },
   created() {
-    const months = []
-    let customIndex = 0
-    let [Y, M] = this.displayRangeStart.split('-').map(Number)
-    let [year, month] = [Y, M]
-    // 循环出月份
-    for (let i = 0; i < this.displayRange; i++) {
-      // 每满 13月
-      if (M + i > 12) {
-        M -= 12 // 月份从1开始
-        year = ++Y // 进 1年
-      }
-      month = M + i
-      const days = [] // 每一天的数据对象会放入该数组
-      // 通过占位把 1号排到实际的星期位置
-      // 默认周日开头情况下，今天是星期几，就需要几个占位符
-      // 周日为 0，不用处理
-      let placeholder = new Date(year, month - 1, 1).getDay()
-      // 如果是周一开头，把占位符往前移一天
-      // 周日为 0，需处理成 7-1
-      if (this.mondayFirst) placeholder = placeholder === 0 ? 6 : placeholder - 1
-      for (let j = 0; j < placeholder; j++) {
-        customIndex++
-        days.push({ custom: {} })
-      }
-      // 得到当月总天数
-      const daySum = new Date(year, month, 0).getDate()
-      // 循环出每一天
-      for (let day = 1; day <= daySum; day++) {
-        const obj = {} // 存放的数据将会在 template中用到
-        obj.custom = {}
-        obj.year = year
-        obj.month = month
-        obj.day = day
-        obj.date = `${year}-${month}-${day}`
-        obj.odate = `${year}-${ month > 9 ? month : '0' + month}-${ day > 9 ? day : '0' + day}` // 补0的日期格式
-        // 显示“今天”或者几号
-        obj.text = year === this.$date.year && month === this.$date.month && day === this.$date.day ? '今天' : day
-        // 获取星期几，判断周末
-        const weekday = new Date(year, month - 1, day).getDay()
-        const weekend = weekday === 6 || weekday === 0
-        // 判断是否禁用状态
-        // 同时在非禁用状态下，才处理周末
-        const sTime = new DateHelper(this.selectRangeStart).time
-        const currentTime = new DateHelper(obj.date).time
-        const eTime = new DateHelper(this.seEnd).time
-        if (currentTime - sTime < 0 || eTime - currentTime < 0) obj.disabled = true
-        else obj.rest = weekend
-        if (currentTime === sTime) this.customIndex = customIndex
-        // 自定义休息日
-        if (this.restday.length) {
-          this.restday.forEach(date => {
-            if (date === obj.date) obj.restday = obj.rest = true
-          })
-        }
-        // 自定义工作日
-        if (this.workday.length) {
-          this.workday.forEach(date => {
-            if (date === obj.date) {
-              obj.workday = true
-              obj.rest = false
-            }
-          })
-        }
-        customIndex++
-        days.push(obj)
-        // 结束循环每天
-      }
-      months.push({ year, month, days })
-      // 结束循环每月
-    }
-    this.months = months
-    this.setcustom()
-    try {
-      this.observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-          if (entry.intersectionRatio <= 0) return false
-          const { year, month, uct } = entry.target.dataset
-          this.$emit('viewport', { year, month, uct, date: new DateHelper(`${year}-${month}-1`).date })
-        })
-      })
-    } catch (error) {
-      throw error
-    }
+    this.constructionBody()
   },
   mounted() {
     // 设置scrollTop，使其初始进来就定位到想要的位置，而不是显示列表的头部
@@ -344,7 +268,7 @@ export default {
         this.$set(tar, 'begin', true)
         // 记录第一次值
         this.lastSelectDay = this.firstSelectDay
-        this.confirm()
+        if (this.autoComplete) this.confirm()
       } else {
         // 第一次点击
         if (this.firstTime) {
@@ -518,6 +442,91 @@ export default {
         throw `Date format error.Got "${date}".It's should be like "YYYY-MM-DD".`
       }
     },
+    constructionBody() {
+      const months = []
+      let customIndex = 0
+      let [Y, M] = this.displayRangeStart.split('-').map(Number)
+      let [year, month] = [Y, M]
+      // 循环出月份
+      for (let i = 0; i < this.displayRange; i++) {
+        // 每满 13月
+        if (M + i > 12) {
+          M -= 12 // 月份从1开始
+          year = ++Y // 进 1年
+        }
+        month = M + i
+        const days = [] // 每一天的数据对象会放入该数组
+        // 通过占位把 1号排到实际的星期位置
+        // 默认周日开头情况下，今天是星期几，就需要几个占位符
+        // 周日为 0，不用处理
+        let placeholder = new Date(year, month - 1, 1).getDay()
+        // 如果是周一开头，把占位符往前移一天
+        // 周日为 0，需处理成 7-1
+        if (this.mondayFirst) placeholder = placeholder === 0 ? 6 : placeholder - 1
+        for (let j = 0; j < placeholder; j++) {
+          customIndex++
+          days.push({ custom: {} })
+        }
+        // 得到当月总天数
+        const daySum = new Date(year, month, 0).getDate()
+        // 循环出每一天
+        for (let day = 1; day <= daySum; day++) {
+          const obj = {} // 存放的数据将会在 template中用到
+          obj.custom = {}
+          obj.year = year
+          obj.month = month
+          obj.day = day
+          obj.date = `${year}-${month}-${day}`
+          obj.odate = `${year}-${ month > 9 ? month : '0' + month}-${ day > 9 ? day : '0' + day}` // 补0的日期格式
+          // 显示“今天”或者几号
+          obj.text = year === this.$date.year && month === this.$date.month && day === this.$date.day ? '今天' : day
+          // 获取星期几，判断周末
+          const weekday = new Date(year, month - 1, day).getDay()
+          const weekend = weekday === 6 || weekday === 0
+          // 判断是否禁用状态
+          // 同时在非禁用状态下，才处理周末
+          const sTime = new DateHelper(this.selectRangeStart).time
+          const currentTime = new DateHelper(obj.date).time
+          const eTime = new DateHelper(this.seEnd).time
+          if (currentTime - sTime < 0 || eTime - currentTime < 0) obj.disabled = true
+          else obj.rest = weekend
+          if (currentTime === sTime) this.customIndex = customIndex
+          // 自定义休息日
+          if (this.restday.length) {
+            this.restday.forEach(date => {
+              if (date === obj.date) obj.restday = obj.rest = true
+            })
+          }
+          // 自定义工作日
+          if (this.workday.length) {
+            this.workday.forEach(date => {
+              if (date === obj.date) {
+                obj.workday = true
+                obj.rest = false
+              }
+            })
+          }
+          customIndex++
+          days.push(obj)
+          // 结束循环每天
+        }
+        months.push({ year, month, days })
+        // 结束循环每月
+      }
+      this.months = months
+      this.setcustom()
+      try {
+        this.observer = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            if (entry.intersectionRatio <= 0) return false
+            const { year, month, uct } = entry.target.dataset
+            this.$emit('viewport', { year, month, uct, date: new DateHelper(`${year}-${month}-1`).date })
+          })
+        })
+      } catch (error) {
+        throw error
+      }
+    }
   }
 }
 </script>
