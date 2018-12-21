@@ -23,7 +23,7 @@
             <div class="day"
               v-for="(day, j) in item.days" :key="j"
               :style="{'background-color': day.custom.bgcolor,
-              'border-color': day.custom.bdcolor}"
+                       'border-color': day.custom.bdcolor}"
               :class="{'disabled': day.disabled, 'active': day.active, 'select': day.begin || day.end}"
               @click="selectOne(day)">
               <span>{{day.begin ? beginningText : day.end ? endText: '&nbsp;'}}</span>
@@ -170,16 +170,15 @@ export default {
     seEnd() {
       let date
       switch (this.selectRangeEnd) {
-        case 'today':
-          date = new DateHelper().date
-          break
-        case '':
-          date = '9999-12-31'
-          break
-      
-        default:
-          date = this.selectRangeEnd
-          break
+      case 'today':
+        date = new DateHelper().date
+        break
+      case '':
+        date = '9999-12-31'
+        break
+      default:
+        date = this.selectRangeEnd
+        break
       }
       return date
     }
@@ -405,14 +404,28 @@ export default {
     },
     setcustom() {
       // 自定义数据
+      let days = []
       if (this.custom.length) {
         // 将months里的days连接成一个普通的一维数组
-        let days = []
         this.months.forEach(v => days = days.concat(v.days))
         // 从记录的index位置开始遍历日期，从0开始遍历自定义数组
         for (let i = this.customIndex, j = 0; j < this.custom.length; i++) {
           const v = days[i]
-          const data = this.custom[j]
+          const data = this.custom[j] || ''
+          // 跳过1号之前的
+          if (v.text) {
+            j++
+            const type = typeof data
+            if (type === 'string') this.$set(v, 'custom', { text: data })
+            else if (type === 'object') this.$set(v, 'custom', data)
+            else throw `custom数组每项的类型应该是String或Object，但是得到的是${type}`
+          }
+        }
+      } else {
+        this.months.forEach(v => days = days.concat(v.days))
+        for (let i = this.customIndex, j = 0; j < this.lastTime; i++) {
+          const v = days[i]
+          const data = this.custom[j] || ''
           // 跳过1号之前的
           if (v.text) {
             j++
@@ -423,6 +436,7 @@ export default {
           }
         }
       }
+      this.lastTime = this.custom.length
     },
     setData(data, date) {
       const [Y, M, D] = new DateHelper(date).date.split('-').map(Number)
