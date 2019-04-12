@@ -1,6 +1,6 @@
 {
   "name": "aki-datepicker",
-  "version": "0.13.6",
+  "version": "2.0.0",
   "description": "A calendar friendly for mobile, which can select the date by the range.It is typically used for hotel.",
   "main": "index.js",
   "directories": {
@@ -25,5 +25,8 @@
   "bugs": {
     "url": "https://github.com/ikarosu/vue-datepicker-mobile/issues"
   },
-  "homepage": "https://github.com/ikarosu/vue-datepicker-mobile#readme"
+  "homepage": "https://github.com/ikarosu/vue-datepicker-mobile#readme",
+  "dependencies": {
+    "date-utils": "^1.2.21"
+  }
 }

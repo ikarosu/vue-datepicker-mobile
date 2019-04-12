@@ -1,0 +1,64 @@
+$x1: 8px;
+$x2: 2 * $x1;
+$x3: 3 * $x1;
+$x4: 4 * $x1;
+.aki-date {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: calc(100vh - 60px);
+  max-height: 100vh;
+  width: 100vw;
+  font-size: 12px;
+  background-color: antiquewhite;
+  &-header {
+    > div {
+      display: flex;
+      justify-content: space-between;
+    }
+    &-action{
+      height: 48px;
+      > button {
+        padding: $x2;
+        border: none;
+        outline: none;
+        background: none;
+      }
+    }
+    &-week{
+      display: flex;
+      justify-content: space-evenly;
+      padding: $x1 0;
+      font-weight: bold;
+      border: solid #ccc 0;
+      border-top-width: 2px;
+      > span {
+        flex: 1;
+      }
+    }
+  }
+  &-body {
+    flex: 1;
+    overflow-y: scroll;
+  }
+  &-month {
+    &-header {
+      position: sticky;
+      top: 0;
+      padding: $x1 0;
+      background-color: #ddd;
+    }
+    &-body {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    &-day {
+      min-height: 72px;
+      background-color: #fff;
+      > p {
+        margin: 0;
+        width: calc(100vw / 7);
+      }
+    }
+  }
+}
