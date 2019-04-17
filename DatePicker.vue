@@ -1,5 +1,6 @@
 <script>
 const INIT_LENGTH = 7
+const RENDER_COUNT = 3
 export default {
   name: 'AkiDate',
   props: {
@@ -16,6 +17,36 @@ export default {
       default() {
         return {}
       }
+    },
+    startText: {
+      type: String,
+      default: '入住'
+    },
+    endText: {
+      type: String,
+      default: '离店'
+    },
+    single: {
+      type: Boolean,
+      default: false
+    },
+    mondayFirst: {
+      type: Boolean,
+      default: true
+    },
+    visible: {
+      type: Boolean,
+      default: false
+    },
+    selected: {
+      type: Object,
+      default() {
+        return {}
+      }
+    },
+    selectArea: {
+      type: Array,
+      default() { return [] }
     }
   },
   computed: {
@@ -23,89 +54,383 @@ export default {
       return new Date(this.initDate)
     },
     initIndex() {
-      return this.insertedDate.findIndex(
-        month => month.toYM() === this.initDisplay.toYM()
+      return this.renderDate.findIndex(
+        ({ date }) => date.toYM() === this.initDisplay.toYM()
       )
+    },
+    allDays() {
+      return this.renderDate.reduce((a, b) => a.concat(b.days), [])
+    },
+    customMode() {
+      const customKeys = Object.keys(this.custom)
+      return customKeys.length === 1 && customKeys[0].length > 7 ? 0 : 1
     }
   },
-  watch: {},
+  watch: {
+    mondayFirst: {
+      immediate: true,
+      handler(v) {
+        if (v) this.weekTextsData = this.weekTexts.concat([])
+        else this.weekTextsData.unshift(this.weekTextsData.splice(-1, 1)[0])
+      }
+    },
+    async 'renderDate.length'() {
+      await this.$nextTick()
+      // 监听滚动
+      Array.from(this.$refs['date-body'].children)
+        .filter(
+          d =>
+            d.classList.contains('aki-date-month-header') && d.dataset.obs !== 'true'
+        )
+        .forEach(d => {
+          this.observer.observe(d)
+          d.dataset.obs = 'true'
+        })
+    },
+    'allDays.length'() {
+      const days = this.allDays
+      if (this.customMode === 0) {
+        const key = Object.keys(this.custom)[0]
+        const customData = this.custom[key]
+        const start = new Date(key)
+        const index = days.findIndex(day => Date.equalsDay(day.date, start))
+        customData.forEach((custom, i) => {
+          days[index + i].data.custom = custom
+        })
+      }
+    }
+  },
   data() {
     return {
-      // days: 31,
-      // months: 12,
-      insertedDate: []
+      renderDate: [],
+      value: {
+        start: undefined,
+        range: [],
+        end: undefined
+      },
+      weekTextsData: this.weekTexts.concat([]),
+      observer: null
     }
   },
   created() {
     for (let i = 1 - INIT_LENGTH; i < INIT_LENGTH; i++) {
-      this.insertedDate.push(this.initDisplay.clone().addMonths(i))
+      const date = this.initDisplay.clone().addMonths(i)
+      this.renderDate.push({
+        date,
+        days: this.initDays(date)
+      })
     }
+    // 监听滚动
+    this.observer = new IntersectionObserver(entries => {
+      entries.forEach(async entry => {
+        const ymd = entry.target.YM
+        if (!this.visible) return
+        if (entry.intersectionRatio <= 0) {
+          if (this.allDays[0].data.disabled) return
+          if (this.renderDate[2].date.toYM() === new Date(ymd).toYM()) {
+            for (let i = 1; i <= RENDER_COUNT; i++) {
+              const date = this.renderDate[0].date.clone().addMonths(-1)
+              this.renderDate.unshift({
+                date,
+                days: this.initDays(date)
+              })
+            }
+            this.setScrollTop()
+          }
+        } else {
+          if (this.allDays[this.allDays.length - 1].data.disabled) return
+          const last = this.renderDate[this.renderDate.length - 1]
+          if (last.date.toYM() === new Date(ymd).toYM()) {
+            for (let i = 1; i <= RENDER_COUNT; i++) {
+              const date = last.date.clone().addMonths(i)
+              this.renderDate.push({
+                date: date,
+                days: this.initDays(date)
+              })
+            }
+          }
+        }
+      })
+    })
+    this.$watch(
+      'selected',
+      async function(v) {
+        await this.$nextTick()
+        const start = v.start || {}
+        const end = v.end || {}
+        if (start.date && end.date) {
+          this.selectOne(start.date.toYMD())
+          this.selectOne(end.date.toYMD())
+        } else if (start.date) {
+          this.selectOne(start.date.toYMD())
+        } else if (end.date) {
+          this.selectOne(end.date.toYMD())
+          this.selectOne(end.date.toYMD())
+        }
+      },
+      { immediate: true, deep: true }
+    )
   },
   mounted() {
-    let top = 0
+    // 设置初始位置
     const wrap = this.$refs['date-body']
-    console.dir(wrap)
     for (let i = 0; i < this.initIndex * 2; i++) {
-      top += wrap.children[i].offsetHeight
+      wrap.scrollTop += wrap.children[i].offsetHeight
     }
-    wrap.scrollTop = top
+  },
+  methods: {
+    initDays(date) {
+      const maxDay = date.getDateLength()
+      return Array.apply(null, { length: maxDay }).map((_, index) => {
+        const today = date.clone()
+        today.setDate(index + 1)
+        return {
+          data: { custom: { info: '' } },
+          date: today
+        }
+      })
+    },
+    async setScrollTop() {
+      await this.$nextTick()
+      const wrap = this.$refs['date-body']
+      let top = wrap.scrollTop
+      for (let i = 0; i < RENDER_COUNT * 2; i++) {
+        top += wrap.children[i].offsetHeight
+      }
+      setTimeout(() => {
+        wrap.scrollTo(0, top)
+      }, 80)
+    },
+    selectOne(ymd) {
+      const selectDay = new Date(ymd)
+
+      // dom
+      // const wrap = this.$refs['date-body']
+      // const targetMonth = Array.from(wrap.children).find(
+      //   month => month.dataset.date === selectDay.toYM()
+      // )
+      // console.log('targetMonth', targetMonth)
+      // const targetDay = Array.from(targetMonth.children).find(
+      //   day => day.dataset.date === selectDay.toYMD()
+      // )
+      // console.log('target', targetDay)
+
+      // data
+      const dataMonth = this.renderDate.find(
+        ({ date }) => date.toYM() === selectDay.toYM()
+      )
+      const dataDay = dataMonth.days.find(
+        ({ date }) => date.toYMD() === selectDay.toYMD()
+      )
+      if (dataDay.data.disabled) return
+      if (dataDay.data.custom.disabled) {
+        this.$emit('disable', dataDay)
+        return
+      }
+      if (this.value.start && this.value.end) {
+        // 已选中开头和结尾
+        // 清空上次选择
+        this.$set(this.value.start.data, 'boundary', undefined)
+        this.$set(this.value.end.data, 'boundary', undefined)
+        this.value.end = undefined
+        this.value.range.forEach(({ data }) => this.$set(data, 'range', false))
+        this.value.range = []
+        // 选中本次
+        this.$set(dataDay.data, 'boundary', 'start')
+        this.value.start = dataDay
+      } else if (this.value.start) {
+        // 只选了开头，本次是第二次
+        // 二选日期小于一选日期
+        if (dataDay.date.getTime() < this.value.start.date.getTime()) {
+          // 则交换
+          // 原来的start变为end
+          this.$set(this.value.start.data, 'boundary', 'end')
+          this.value.end = this.value.start
+          // 本次设为start
+          this.$set(dataDay.data, 'boundary', 'start')
+          this.value.start = dataDay
+        } else {
+          this.$set(dataDay.data, 'boundary', 'end')
+          this.value.end = dataDay
+        }
+        // 处理选中的中间区域
+        const startDate = this.value.start.date
+        const endDate = this.value.end.date
+        const startIndex = this.allDays.findIndex(({ date }) =>
+          Date.equals(date, startDate)
+        )
+        const endIndex = this.allDays.findIndex(({ date }) =>
+          Date.equals(date, endDate)
+        )
+        const rangeDays = this.allDays.slice(startIndex + 1, endIndex)
+        const disabledDay = rangeDays.find(({ data }) => data.custom.disabled)
+        if (disabledDay) {
+          this.$emit('disable', disabledDay)
+          this.$set(this.value.end.data, 'boundary', undefined)
+          this.value.end = undefined
+          return
+        } else {
+          rangeDays.forEach(day => {
+            this.value.range.push(day)
+            this.$set(day.data, 'range', true)
+          })
+        }
+      } else {
+        // 没选（初始状态）
+        this.$set(dataDay.data, 'boundary', 'start')
+        this.value.start = dataDay
+      }
+    },
+    selectHandler(e) {
+      e.preventDefault()
+      const dayDOM = e.currentTarget
+      this.selectOne(dayDOM.dataset.date)
+      this.$emit('select', this.value)
+    }
   },
   render(h) {
     const vm = this
-    return h('section', { class: 'aki-date' }, [
-      h('header', { class: 'aki-date-header' }, [
-        h('div', { class: 'aki-date-header-action' }, [
-          h('button', '取消'),
-          h('button', '确认')
+    return h(
+      'section',
+      { class: ['aki-date', { 'aki-date-visible': this.visible }] },
+      [
+        h('header', { class: 'aki-date-header' }, [
+          h('div', { class: 'aki-date-header-action' }, [
+            h(
+              'button',
+              {
+                on: {
+                  click() {
+                    vm.$emit('cancle')
+                  }
+                }
+              },
+              '取消'
+            ),
+            h(
+              'button',
+              {
+                on: {
+                  click() {
+                    vm.$emit('confirm', vm.value)
+                  }
+                }
+              },
+              '确认'
+            )
+          ]),
+          h(
+            'div',
+            { class: 'aki-date-header-week' },
+            vm.weekTextsData.map(w => h('span', w))
+          )
         ]),
         h(
           'div',
-          { class: 'aki-date-header-week' },
-          this.weekTexts.map(w => h('span', w))
-        )
-      ]),
-      h(
-        'div',
-        { class: 'aki-date-body', ref: 'date-body' },
-        this.insertedDate.map(month => [
-          h('div', { class: 'aki-date-month-header' }, month.toYM()),
-          h(
-            'div',
-            { class: 'aki-date-month-body' },
-            (function() {
-              const maxDay = month.getDateLength()
-              const custom = vm.custom[month.toYM()] || []
-              const days = Array.apply(null, { length: maxDay }).map(
-                (_, index) => {
+          { class: 'aki-date-body', ref: 'date-body' },
+          this.renderDate.map(({ date, days }) => {
+            const maxDay = date.getDateLength()
+            const custom = vm.custom[date.toYM()] || []
+            const daysDOM = Array.apply(null, { length: maxDay }).map(
+              (_, index) => {
+                const today = date.clone()
+                today.setDate(index + 1)
+                // 添加默认属性
+                if (this.customMode) {
                   const optionDay = custom[index] || {}
-                  const info = optionDay.info || []
-                  const data = typeof info === 'string' ? [{ text: info }] : info
-                  return h(
-                    'div',
-                    {
-                      class: 'aki-date-month-day',
-                      style: { 'background-color': optionDay.bgc }
-                    },
-                    [
-                      h('p', index + 1),
-                      ...data.map(t =>
-                        h('p', { style: { color: t.color } }, t.text)
-                      )
-                    ]
-                  )
+                  for (const key in optionDay) {
+                    if (optionDay.hasOwnProperty(key)) {
+                      const element = optionDay[key]
+                      days[index].data.custom[key] = element
+                    }
+                  }
                 }
-              )
-              for (let i = 1; i < month.getWeekAsFirstDay(); i++) {
-                days.unshift(
-                  h('div', { class: 'aki-date-month-day' }, [h('p', ' ')])
+                // 禁用区域
+                const [start, end] = this.selectArea
+                if (start) {
+                  const date = new Date(start)
+                  if (Date.compare(today, date) < 0) days[index].data.disabled = true
+                }
+                if (end) {
+                  const date = new Date(end)
+                  if (Date.compare(today, date) > 0) days[index].data.disabled = true
+                }
+                const { boundary, range, disabled } = days[index].data
+                const customDay = days[index].data.custom
+                const texts = typeof customDay.info === 'string' ? [{ text: customDay.info }] : customDay.info
+
+                return h(
+                  'div',
+                  {
+                    class: [
+                      'aki-date-month-day',
+                      { 'aki-date-month-day-boundary': boundary },
+                      { 'aki-date-month-day-range': range },
+                      { 'aki-date-month-day-disabled': disabled }
+                    ],
+                    style: { 'background-color': customDay.bgc, 'color': customDay.color },
+                    attrs: {
+                      'data-date': today.toYMD()
+                    },
+                    on: {
+                      click: vm.selectHandler
+                    }
+                  },
+                  [
+                    h('p', {
+                      class: 'tip',
+                      domProps: {
+                        innerHTML:
+                          boundary === 'start'
+                            ? vm.startText
+                            : boundary === 'end'
+                              ? vm.endText
+                              : '&nbsp;'
+                      }
+                    }),
+                    h('p', Date.equalsDay(today, Date.today()) ? '今天' : index + 1),
+                    ...texts.map(t =>
+                      h('p', { style: { color: t.color } }, t.text)
+                    )
+                  ]
                 )
               }
-              return days
-            })()
-          )
-        ])
-      )
-    ])
+            )
+            let min, max
+            if (this.mondayFirst) {
+              min = 1
+              max = date.getWeekAsFirstDay()
+            } else {
+              min = 0
+              max = date.getWeekAsFirstDay() === 7 ? 0 : date.getWeekAsFirstDay()
+            }
+            for (let i = min; i < max; i++) {
+              daysDOM.unshift(
+                h('div', { class: 'aki-date-month-day' }, [h('p', ' ')])
+              )
+            }
+            return [
+              h(
+                'div',
+                {
+                  class: 'aki-date-month-header',
+                  domProps: { YM: date.toYM() }
+                },
+                date.toYM()
+              ),
+              h(
+                'div',
+                {
+                  class: 'aki-date-month-body',
+                  attrs: { 'data-date': date.toYM() }
+                },
+                daysDOM
+              )
+            ]
+          })
+        )
+      ]
+    )
   }
 }
 </script>
