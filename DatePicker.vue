@@ -368,11 +368,11 @@ export default {
                 const [start, end] = this.selectArea
                 if (start) {
                   const date = new Date(start)
-                  if (Date.compare(today, date) < 0) days[index].data.disabled = true
+                  days[index].data.disabled = Date.compare(today, date) < 0
                 }
                 if (end) {
                   const date = new Date(end)
-                  if (Date.compare(today, date) > 0) days[index].data.disabled = true
+                  days[index].data.disabled = Date.compare(today, date) > 0
                 }
                 const { boundary, range, disabled } = days[index].data
                 const customDay = days[index].data.custom
