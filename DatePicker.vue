@@ -28,6 +28,14 @@ export default {
       type: String,
       default: '离店'
     },
+    cancleText: {
+      type: String,
+      default: '取消'
+    },
+    confirmText: {
+      type: String,
+      default: '确认'
+    },
     single: {
       type: Boolean,
       default: false
@@ -41,12 +49,9 @@ export default {
       default: false
     },
     selected: {
-      type: Object,
+      type: Array,
       default() {
-        return {
-          start: {},
-          end: {},
-        }
+        return []
       }
     },
     selectArea: {
@@ -128,11 +133,11 @@ export default {
     // 监听滚动
     this.observer = new IntersectionObserver(entries => {
       entries.forEach(async entry => {
-        const ymd = entry.target.YM
+        const ym = entry.target.YM
         if (!this.visible) return
         if (entry.intersectionRatio <= 0) {
           if (this.allDays[0].data.disabled) return
-          if (this.renderDate[2].date.toYM() === new Date(ymd).toYM()) {
+          if (this.renderDate[2].date.toYM() === new Date(ym).toYM()) {
             for (let i = 1; i <= RENDER_COUNT; i++) {
               const date = this.renderDate[0].date.clone().addMonths(-1)
               this.renderDate.unshift({
@@ -143,9 +148,10 @@ export default {
             this.setScrollTop()
           }
         } else {
+          this.$emit('viewport', this.renderDate.find(({ date }) => date.toYM() === ym))
           if (this.allDays[this.allDays.length - 1].data.disabled) return
           const last = this.renderDate[this.renderDate.length - 1]
-          if (last.date.toYM() === new Date(ymd).toYM()) {
+          if (last.date.toYM() === new Date(ym).toYM()) {
             for (let i = 1; i <= RENDER_COUNT; i++) {
               const date = last.date.clone().addMonths(i)
               this.renderDate.push({
@@ -159,18 +165,16 @@ export default {
     })
     this.$watch(
       'selected',
-      async function(v) {
+      async function([start, end]) {
         await this.$nextTick()
-        const start = v.start || {}
-        const end = v.end || {}
-        if (start.date && end.date) {
-          this.selectOne(start.date.toYMD())
-          this.selectOne(end.date.toYMD())
-        } else if (start.date) {
-          this.selectOne(start.date.toYMD())
-        } else if (end.date) {
-          this.selectOne(end.date.toYMD())
-          this.selectOne(end.date.toYMD())
+        if (start && end) {
+          this.selectOne(start)
+          this.selectOne(end)
+        } else if (start) {
+          this.selectOne(start)
+        } else if (end) {
+          this.selectOne(end)
+          this.selectOne(end)
         }
       },
       { immediate: true, deep: true }
@@ -317,7 +321,7 @@ export default {
                   }
                 }
               },
-              '取消'
+              vm.cancleText
             ),
             h(
               'button',
@@ -328,7 +332,7 @@ export default {
                   }
                 }
               },
-              '确认'
+              vm.confirmText
             )
           ]),
           h(
@@ -403,7 +407,7 @@ export default {
                               : '&nbsp;'
                       }
                     }),
-                    h('p', { class: ['aki-date-month-day-number', { 'rest': rest }] }, Date.equalsDay(today, Date.today()) ? '今天' : index + 1),
+                    h('p', { class: ['aki-date-month-day-number', { 'rest': rest, 'disabled': disabled }] }, Date.equalsDay(today, Date.today()) ? '今天' : index + 1),
                     ...texts.map(t =>
                       h('p', { style: { color: t.color } }, t.text)
                     )

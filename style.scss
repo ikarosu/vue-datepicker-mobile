@@ -1,4 +1,5 @@
 $x1: 8px;
+$x0: $x1 / 2;
 $x2: 2 * $x1;
 $x3: 3 * $x1;
 $x4: 4 * $x1;
@@ -70,30 +71,30 @@ $x4: 4 * $x1;
         margin: 0;
         width: calc(100vw / 7);
         &.tip{
-          margin: 4px 0;
+          margin: $x0 0;
           color: #f0f0f0;
         }
         &:last-child{
-          margin-bottom: 4px;
+          margin-bottom: $x0;
         }
       }
       &-number{
         &.rest{
           color: tomato;
         }
+        &.disabled{
+          color: #eee;
+        }
       }
       &-boundary {
         color: white;
         background-color: deepskyblue!important;
-        // box-shadow: none;
       }
       &-range {
         background-color: #afdfff;
-        // box-shadow: inset 0 0 2px 2px #7fdfff;
       }
       &-disabled {
-        color: #aaa;
-        background-color: #eee;
+        color: #eee;
         box-shadow: none;
       }
     }
