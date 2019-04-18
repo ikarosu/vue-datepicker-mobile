@@ -12,9 +12,11 @@ $x4: 4 * $x1;
   min-height: calc(100vh - 60px);
   max-height: 100vh;
   width: 100vw;
+  text-align: center;
   font-size: 12px;
   background-color: #fff;
   transition: ease-out .35s;
+  z-index: 810;
   &-visible{
     top: 0;
   }

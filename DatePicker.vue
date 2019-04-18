@@ -454,6 +454,6 @@ export default {
 }
 </script>
 
-<style lang="sass" scoped>
-@import './style.scss'
+<style scoped>
+@import './style.css'
 </style>

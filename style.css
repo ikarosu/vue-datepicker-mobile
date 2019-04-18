@@ -1,0 +1,99 @@
+.aki-date {
+  position: fixed;
+  top: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: calc(100vh - 60px);
+  max-height: 100vh;
+  width: 100vw;
+  text-align: center;
+  font-size: 12px;
+  background-color: #fff;
+  transition: ease-out 0.35s;
+  z-index: 810;
+}
+.aki-date-visible {
+  top: 0;
+}
+.aki-date-header > div {
+  display: flex;
+  justify-content: space-between;
+  background-color: #eee;
+}
+.aki-date-header-action {
+  height: 48px;
+}
+.aki-date-header-action > button {
+  padding: 16px;
+  border: none;
+  outline: none;
+  background: none;
+}
+.aki-date-header-week {
+  display: flex;
+  justify-content: space-evenly;
+  padding: 8px 0;
+  font-weight: bold;
+  background-color: #fff !important;
+}
+.aki-date-header-week > span {
+  flex: 1;
+}
+.aki-date-header-week > span.rest {
+  color: tomato;
+}
+.aki-date-body {
+  flex: 1;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+}
+.aki-date-month-header {
+  position: sticky;
+  top: 0;
+  padding: 8px 0;
+  background-color: #f9f9f9;
+}
+.aki-date-month-body {
+  display: flex;
+  flex-wrap: wrap;
+}
+.aki-date-month-day {
+  min-height: 72px;
+  color: #999;
+  background-color: #fff;
+  box-shadow: inset 0 0 2px 2px white;
+}
+.aki-date-month-day > p {
+  margin: 0;
+  width: calc(100vw / 7);
+}
+.aki-date-month-day > p.tip {
+  margin: 4px 0;
+  color: #f0f0f0;
+}
+.aki-date-month-day > p:last-child {
+  margin-bottom: 4px;
+}
+.aki-date-month-day-number {
+  color: #666;
+}
+.aki-date-month-day-number.rest {
+  color: tomato;
+}
+.aki-date-month-day-number.disabled {
+  color: #eee;
+}
+.aki-date-month-day-boundary {
+  color: white;
+  background-color: deepskyblue !important;
+}
+.aki-date-month-day-range {
+  background-color: #afdfff;
+}
+.aki-date-month-day-disabled {
+  color: #eee;
+  box-shadow: none;
+}
+
+/*# sourceMappingURL=style.css.map */
