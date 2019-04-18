@@ -40,6 +40,9 @@ $x4: 4 * $x1;
       background-color: #fff!important;
       > span {
         flex: 1;
+        &.rest{
+          color: tomato;
+        }
       }
     }
   }
@@ -72,6 +75,11 @@ $x4: 4 * $x1;
         }
         &:last-child{
           margin-bottom: 4px;
+        }
+      }
+      &-number{
+        &.rest{
+          color: tomato;
         }
       }
       &-boundary {

@@ -8,10 +8,12 @@ export default {
       type: Array,
       default: () => ['一', '二', '三', '四', '五', '六', '日']
     },
+    // 初始日期
     initDate: {
       type: String,
       default: Date.today().toYMD()
     },
+    // 自定义数据
     custom: {
       type: Object,
       default() {
@@ -41,7 +43,10 @@ export default {
     selected: {
       type: Object,
       default() {
-        return {}
+        return {
+          start: {},
+          end: {},
+        }
       }
     },
     selectArea: {
@@ -227,6 +232,13 @@ export default {
         this.$emit('disable', dataDay)
         return
       }
+      if (this.single) {
+        if (this.value.start)
+          this.$set(this.value.start.data, 'boundary', undefined)
+        this.$set(dataDay.data, 'boundary', 'start')
+        this.value.start = dataDay
+      }
+      else
       if (this.value.start && this.value.end) {
         // 已选中开头和结尾
         // 清空上次选择
@@ -322,7 +334,10 @@ export default {
           h(
             'div',
             { class: 'aki-date-header-week' },
-            vm.weekTextsData.map(w => h('span', w))
+            vm.weekTextsData.map((w, index) => {
+              const weekend = vm.mondayFirst ? [5, 6] : [0, 6]
+              return h('span', { class: { 'rest': weekend.includes(index) } }, w)
+            })
           )
         ]),
         h(
@@ -358,7 +373,7 @@ export default {
                 const { boundary, range, disabled } = days[index].data
                 const customDay = days[index].data.custom
                 const texts = typeof customDay.info === 'string' ? [{ text: customDay.info }] : customDay.info
-
+                const rest = today.isWeekend()
                 return h(
                   'div',
                   {
@@ -388,7 +403,7 @@ export default {
                               : '&nbsp;'
                       }
                     }),
-                    h('p', Date.equalsDay(today, Date.today()) ? '今天' : index + 1),
+                    h('p', { class: ['aki-date-month-day-number', { 'rest': rest }] }, Date.equalsDay(today, Date.today()) ? '今天' : index + 1),
                     ...texts.map(t =>
                       h('p', { style: { color: t.color } }, t.text)
                     )
