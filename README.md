@@ -5,7 +5,9 @@
 
 ## v2
 
-![e.g.](https://github.com/ikarosu/vue-datepicker-mobile/blob/master/git/v2.jpg?raw=true)
+[中文版](https://github.com/ikarosu/vue-datepicker-mobile/blob/v2/doc/zh-hans.md)
+
+![e.g.](https://github.com/ikarosu/vue-datepicker-mobile/blob/v2/git/v2.jpg?raw=true)
 
 [Live Demo](https://ikarosu.github.io/datepicker/)
 
