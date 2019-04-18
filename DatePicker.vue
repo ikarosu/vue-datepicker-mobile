@@ -231,7 +231,7 @@ export default {
       const dataDay = dataMonth.days.find(
         ({ date }) => date.toYMD() === selectDay.toYMD()
       )
-      if (dataDay.data.disabled) return
+      if (dataDay.data.disabled) return false
       if (dataDay.data.custom.disabled) {
         this.$emit('disable', dataDay)
         return
@@ -296,12 +296,12 @@ export default {
         this.$set(dataDay.data, 'boundary', 'start')
         this.value.start = dataDay
       }
+      return true
     },
     selectHandler(e) {
       e.preventDefault()
       const dayDOM = e.currentTarget
-      this.selectOne(dayDOM.dataset.date)
-      this.$emit('select', this.value)
+      if (this.selectOne(dayDOM.dataset.date)) this.$emit('select', this.value)
     }
   },
   render(h) {
