@@ -28,7 +28,7 @@ export default {
       type: String,
       default: '离店'
     },
-    cancleText: {
+    cancelText: {
       type: String,
       default: '取消'
     },
@@ -317,11 +317,11 @@ export default {
               {
                 on: {
                   click() {
-                    vm.$emit('cancle')
+                    vm.$emit('cancel')
                   }
                 }
               },
-              vm.cancleText
+              vm.cancelText
             ),
             h(
               'button',
@@ -376,7 +376,7 @@ export default {
                 }
                 const { boundary, range, disabled } = days[index].data
                 const customDay = days[index].data.custom
-                const texts = typeof customDay.info === 'string' ? [{ text: customDay.info }] : customDay.info
+                const texts = typeof customDay.info === 'string' ? [{ text: customDay.info }] : customDay.info instanceof Array ? customDay.info : [customDay.info]
                 const rest = today.isWeekend()
                 return h(
                   'div',
@@ -407,9 +407,9 @@ export default {
                               : '&nbsp;'
                       }
                     }),
-                    h('p', { class: ['aki-date-month-day-number', { 'rest': rest, 'disabled': disabled }] }, Date.equalsDay(today, Date.today()) ? '今天' : index + 1),
+                    h('p', { class: ['aki-date-month-day-number', { 'rest': rest, 'disabled': disabled }], style: { 'color': customDay.color } }, Date.equalsDay(today, Date.today()) ? '今天' : index + 1),
                     ...texts.map(t =>
-                      h('p', { style: { color: t.color } }, t.text)
+                      h('p', { style: { color: t.color } }, t.text || t)
                     )
                   ]
                 )
