@@ -210,18 +210,6 @@ export default {
     },
     selectOne(ymd) {
       const selectDay = new Date(ymd)
-
-      // dom
-      // const wrap = this.$refs['date-body']
-      // const targetMonth = Array.from(wrap.children).find(
-      //   month => month.dataset.date === selectDay.toYM()
-      // )
-      // console.log('targetMonth', targetMonth)
-      // const targetDay = Array.from(targetMonth.children).find(
-      //   day => day.dataset.date === selectDay.toYMD()
-      // )
-      // console.log('target', targetDay)
-
       // data
       const dataMonth = this.renderDate.find(
         ({ date }) => date.toYM() === selectDay.toYM()
@@ -352,7 +340,6 @@ export default {
                 const today = date.clone()
                 today.setDate(index + 1)
                 const currentDate = days[index]
-                // 添加默认属性
                 if (this.customMode) {
                   const custom = vm.custom[date.toYM()] || []
                   const optionDay = custom[index] || {}
@@ -366,7 +353,6 @@ export default {
                   const key = Object.keys(this.customComputed)[0]
                   const start = new Date(key)
                   if (Date.compare(today, start) > -1 && this.customIndex < Infinity) {
-                    console.log('0', 0)
                     currentDate.data.custom = this.customComputed[key][this.customIndex++]
                     if (this.customIndex === this.customComputed[key].length) this.customIndex = Infinity
                   }
@@ -383,7 +369,8 @@ export default {
                 }
                 const { boundary, range, disabled } = currentDate.data
                 const customDay = currentDate.data.custom
-                const texts = typeof customDay.info === 'string' ? [{ text: customDay.info }] : customDay.info instanceof Array ? customDay.info : [customDay.info]
+                const info = customDay.info || ''
+                const texts = typeof info === 'string' ? [{ text: info }] : info instanceof Array ? info || [{}] : [info]
                 const rest = today.isWeekend()
                 return h(
                   'div',
