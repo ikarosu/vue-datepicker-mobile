@@ -1,6 +1,6 @@
 {
   "name": "aki-datepicker",
-  "version": "2.0.2",
+  "version": "2.0.4",
   "description": "A calendar friendly for mobile, which can select the date by the range.It is typically used for hotel.",
   "main": "index.js",
   "directories": {

@@ -352,7 +352,7 @@ export default {
                 } else {
                   const key = Object.keys(this.customComputed)[0]
                   const start = new Date(key)
-                  if (Date.compare(today, start) > -1 && this.customIndex < Infinity) {
+                  if (Date.compare(today, start) > -1 && this.customIndex < Infinity && this.customComputed[key].length > 0) {
                     currentDate.data.custom = this.customComputed[key][this.customIndex++]
                     if (this.customIndex === this.customComputed[key].length) this.customIndex = Infinity
                   }
