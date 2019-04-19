@@ -401,11 +401,11 @@ export default {
                 const [start, end] = this.selectArea
                 if (start) {
                   const date = new Date(start)
-                  currentDate.data.disabled = Date.compare(today, date) < 0
+                  if (Date.compare(today, date) < 0) days[index].data.disabled = true
                 }
                 if (end) {
                   const date = new Date(end)
-                  currentDate.data.disabled = Date.compare(today, date) > 0
+                  if (Date.compare(today, date) > 0) days[index].data.disabled = true
                 }
                 const { boundary, range, disabled } = currentDate.data
                 const customDay = currentDate.data.custom
