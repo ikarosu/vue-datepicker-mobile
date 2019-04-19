@@ -210,7 +210,7 @@ export default {
     'allDays.length'() {
       const days = this.allDays
       if (this.customMode === 0) {
-        const key = Object.keys(this.custom)[0]
+        const key = Object.keys(this.customComputed)[0]
         const customData = this.custom[key]
         const start = new Date(key)
         const index = days.findIndex(day => Date.equalsDay(day.date, start))
