@@ -206,6 +206,18 @@ export default {
       arr.forEach(day => {
         this.$set(day.data, 'range', true)
       })
+    },
+    'allDays.length'() {
+      const days = this.allDays
+      if (this.customMode === 0) {
+        const key = Object.keys(this.custom)[0]
+        const customData = this.custom[key]
+        const start = new Date(key)
+        const index = days.findIndex(day => Date.equalsDay(day.date, start))
+        customData.forEach((custom, i) => {
+          days[index + i].data.custom = custom
+        })
+      }
     }
   },
   created() {
