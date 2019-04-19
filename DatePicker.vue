@@ -15,7 +15,7 @@ export default {
     },
     // 自定义数据
     custom: {
-      type: Object,
+      type: [Object, Array],
       default() {
         return {}
       }
@@ -72,8 +72,14 @@ export default {
       return this.renderDate.reduce((a, b) => a.concat(b.days), [])
     },
     customMode() {
-      const customKeys = Object.keys(this.custom)
+      const customKeys = Object.keys(this.customComputed)
       return customKeys.length === 1 && customKeys[0].length > 7 ? 0 : 1
+    },
+    todayYMD() {
+      return Date.today().toYMD()
+    },
+    customComputed() {
+      return this.custom instanceof Array ? { [this.todayYMD]: this.custom } : this.custom
     }
   },
   watch: {
@@ -97,17 +103,8 @@ export default {
           d.dataset.obs = 'true'
         })
     },
-    'allDays.length'() {
-      const days = this.allDays
-      if (this.customMode === 0) {
-        const key = Object.keys(this.custom)[0]
-        const customData = this.custom[key]
-        const start = new Date(key)
-        const index = days.findIndex(day => Date.equalsDay(day.date, start))
-        customData.forEach((custom, i) => {
-          days[index + i].data.custom = custom
-        })
-      }
+    custom() {
+      this.customIndex = 0
     }
   },
   data() {
@@ -119,7 +116,8 @@ export default {
         end: undefined
       },
       weekTextsData: this.weekTexts.concat([]),
-      observer: null
+      observer: null,
+      customIndex: 0,
     }
   },
   created() {
@@ -349,33 +347,42 @@ export default {
           { class: 'aki-date-body', ref: 'date-body' },
           this.renderDate.map(({ date, days }) => {
             const maxDay = date.getDateLength()
-            const custom = vm.custom[date.toYM()] || []
             const daysDOM = Array.apply(null, { length: maxDay }).map(
               (_, index) => {
                 const today = date.clone()
                 today.setDate(index + 1)
+                const currentDate = days[index]
                 // 添加默认属性
                 if (this.customMode) {
+                  const custom = vm.custom[date.toYM()] || []
                   const optionDay = custom[index] || {}
                   for (const key in optionDay) {
                     if (optionDay.hasOwnProperty(key)) {
                       const element = optionDay[key]
-                      days[index].data.custom[key] = element
+                      currentDate.data.custom[key] = element
                     }
+                  }
+                } else {
+                  const key = Object.keys(this.customComputed)[0]
+                  const start = new Date(key)
+                  if (Date.compare(today, start) > -1 && this.customIndex < Infinity) {
+                    console.log('0', 0)
+                    currentDate.data.custom = this.customComputed[key][this.customIndex++]
+                    if (this.customIndex === this.customComputed[key].length) this.customIndex = Infinity
                   }
                 }
                 // 禁用区域
                 const [start, end] = this.selectArea
                 if (start) {
                   const date = new Date(start)
-                  days[index].data.disabled = Date.compare(today, date) < 0
+                  currentDate.data.disabled = Date.compare(today, date) < 0
                 }
                 if (end) {
                   const date = new Date(end)
-                  days[index].data.disabled = Date.compare(today, date) > 0
+                  currentDate.data.disabled = Date.compare(today, date) > 0
                 }
-                const { boundary, range, disabled } = days[index].data
-                const customDay = days[index].data.custom
+                const { boundary, range, disabled } = currentDate.data
+                const customDay = currentDate.data.custom
                 const texts = typeof customDay.info === 'string' ? [{ text: customDay.info }] : customDay.info instanceof Array ? customDay.info : [customDay.info]
                 const rest = today.isWeekend()
                 return h(
