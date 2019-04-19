@@ -56,7 +56,27 @@ export default {
     },
     selectArea: {
       type: Array,
-      default() { return [] }
+      default() {
+        return []
+      }
+    }
+  },
+  data() {
+    return {
+      renderDate: [],
+      value: {
+        start: undefined,
+        range: [],
+        end: undefined
+      },
+      weekTextsData: this.weekTexts.concat([]),
+      observer: null,
+      customIndex: 0,
+      last: {
+        start: undefined,
+        range: [],
+        end: undefined
+      }
     }
   },
   computed: {
@@ -79,10 +99,44 @@ export default {
       return Date.today().toYMD()
     },
     customComputed() {
-      return this.custom instanceof Array ? { [this.todayYMD]: this.custom } : this.custom
+      return this.custom instanceof Array
+        ? { [this.todayYMD]: this.custom }
+        : this.custom
+    },
+    rangeDays() {
+      if (!this.value.start || !this.value.end) return []
+      // 处理选中的中间区域
+      const startDate = this.value.start.date
+      const endDate = this.value.end.date
+      const startIndex = this.allDays.findIndex(({ date }) =>
+        Date.equals(date, startDate)
+      )
+      const endIndex = this.allDays.findIndex(({ date }) =>
+        Date.equals(date, endDate)
+      )
+      return this.allDays.slice(startIndex + 1, endIndex)
     }
   },
   watch: {
+    selected: {
+      immediate: true,
+      deep: true,
+      async handler([start, end]) {
+        await this.$nextTick()
+        if (start) {
+          if (this.value.start && this.value.start.date.toYMD() !== start)
+            this.$set(this.value.start.data, 'boundary', undefined)
+          this.value.start = this.allDays.find(
+            day => day.date.toYMD() === start
+          )
+        }
+        if (end) {
+          if (this.value.end && this.value.end.date.toYMD() !== end)
+            this.$set(this.value.end.data, 'boundary', undefined)
+          this.value.end = this.allDays.find(day => day.date.toYMD() === end)
+        }
+      }
+    },
     mondayFirst: {
       immediate: true,
       handler(v) {
@@ -96,7 +150,8 @@ export default {
       Array.from(this.$refs['date-body'].children)
         .filter(
           d =>
-            d.classList.contains('aki-date-month-header') && d.dataset.obs !== 'true'
+            d.classList.contains('aki-date-month-header') &&
+            d.dataset.obs !== 'true'
         )
         .forEach(d => {
           this.observer.observe(d)
@@ -105,19 +160,52 @@ export default {
     },
     custom() {
       this.customIndex = 0
-    }
-  },
-  data() {
-    return {
-      renderDate: [],
-      value: {
-        start: undefined,
-        range: [],
-        end: undefined
-      },
-      weekTextsData: this.weekTexts.concat([]),
-      observer: null,
-      customIndex: 0,
+    },
+    'value.start'(v) {
+      if (!v) return
+      if (this.value.end) {
+        this.cleanLastStyle()
+        this.$set(this.value.start.data, 'boundary', undefined)
+        if (Date.compare(v.date, this.value.end.date) < 0)
+          this.$set(v.data, 'boundary', 'start')
+        else {
+          this.value.start = this.value.end
+          this.value.end = v
+          this.$set(v.data, 'boundary', 'start')
+        }
+      } else this.$set(v.data, 'boundary', 'start')
+    },
+    'value.end'(v) {
+      if (!v) return
+      if (this.value.start) {
+        this.cleanLastStyle()
+        this.$set(this.value.end.data, 'boundary', undefined)
+        if (Date.compare(this.value.start.date, v.date) < 0)
+          this.$set(v.data, 'boundary', 'end')
+        else {
+          this.value.end = this.value.start
+          this.value.start = v
+        }
+        const disabledDay = this.rangeDays.find(
+          ({ data }) => data.custom.disabled
+        )
+        if (disabledDay) {
+          this.$emit('disable', disabledDay)
+          this.value.end = undefined
+        }
+      } else {
+        this.value.start = v
+        this.$set(v.data, 'boundary', 'end')
+      }
+    },
+    rangeDays(arr) {
+      if (arr.length < 1)
+        this.value.range.forEach(day => this.$set(day.data, 'range', false))
+      else arr.forEach(day => this.$set(day.data, 'range', true))
+      this.last.range = this.value.range = arr
+      arr.forEach(day => {
+        this.$set(day.data, 'range', true)
+      })
     }
   },
   created() {
@@ -146,7 +234,10 @@ export default {
             this.setScrollTop()
           }
         } else {
-          this.$emit('viewport', this.renderDate.find(({ date }) => date.toYM() === ym))
+          this.$emit(
+            'viewport',
+            this.renderDate.find(({ date }) => date.toYM() === ym)
+          )
           if (this.allDays[this.allDays.length - 1].data.disabled) return
           const last = this.renderDate[this.renderDate.length - 1]
           if (last.date.toYM() === new Date(ym).toYM()) {
@@ -161,22 +252,6 @@ export default {
         }
       })
     })
-    this.$watch(
-      'selected',
-      async function([start, end]) {
-        await this.$nextTick()
-        if (start && end) {
-          this.selectOne(start)
-          this.selectOne(end)
-        } else if (start) {
-          this.selectOne(start)
-        } else if (end) {
-          this.selectOne(end)
-          this.selectOne(end)
-        }
-      },
-      { immediate: true, deep: true }
-    )
   },
   mounted() {
     // 设置初始位置
@@ -186,6 +261,9 @@ export default {
     }
   },
   methods: {
+    cleanLastStyle() {
+      this.value.range.forEach(({ data }) => this.$set(data, 'range', false))
+    },
     initDays(date) {
       const maxDay = date.getDateLength()
       return Array.apply(null, { length: maxDay }).map((_, index) => {
@@ -223,64 +301,19 @@ export default {
         return
       }
       if (this.single) {
-        if (this.value.start)
-          this.$set(this.value.start.data, 'boundary', undefined)
-        this.$set(dataDay.data, 'boundary', 'start')
         this.value.start = dataDay
-      }
-      else
-      if (this.value.start && this.value.end) {
-        // 已选中开头和结尾
-        // 清空上次选择
-        this.$set(this.value.start.data, 'boundary', undefined)
-        this.$set(this.value.end.data, 'boundary', undefined)
-        this.value.end = undefined
-        this.value.range.forEach(({ data }) => this.$set(data, 'range', false))
-        this.value.range = []
-        // 选中本次
-        this.$set(dataDay.data, 'boundary', 'start')
-        this.value.start = dataDay
-      } else if (this.value.start) {
-        // 只选了开头，本次是第二次
-        // 二选日期小于一选日期
-        if (dataDay.date.getTime() < this.value.start.date.getTime()) {
-          // 则交换
-          // 原来的start变为end
-          this.$set(this.value.start.data, 'boundary', 'end')
-          this.value.end = this.value.start
-          // 本次设为start
-          this.$set(dataDay.data, 'boundary', 'start')
-          this.value.start = dataDay
-        } else {
-          this.$set(dataDay.data, 'boundary', 'end')
-          this.value.end = dataDay
-        }
-        // 处理选中的中间区域
-        const startDate = this.value.start.date
-        const endDate = this.value.end.date
-        const startIndex = this.allDays.findIndex(({ date }) =>
-          Date.equals(date, startDate)
-        )
-        const endIndex = this.allDays.findIndex(({ date }) =>
-          Date.equals(date, endDate)
-        )
-        const rangeDays = this.allDays.slice(startIndex + 1, endIndex)
-        const disabledDay = rangeDays.find(({ data }) => data.custom.disabled)
-        if (disabledDay) {
-          this.$emit('disable', disabledDay)
-          this.$set(this.value.end.data, 'boundary', undefined)
-          this.value.end = undefined
-          return
-        } else {
-          rangeDays.forEach(day => {
-            this.value.range.push(day)
-            this.$set(day.data, 'range', true)
-          })
-        }
       } else {
-        // 没选（初始状态）
-        this.$set(dataDay.data, 'boundary', 'start')
-        this.value.start = dataDay
+        const { start, end } = this.value
+        if (start && end) {
+          this.$set(this.value.start.data, 'boundary', undefined)
+          this.$set(this.value.end.data, 'boundary', undefined)
+          this.value.start = dataDay
+          this.value.end = undefined
+        } else if (start) {
+          this.value.end = dataDay
+        } else {
+          this.value.start = dataDay
+        }
       }
       return true
     },
@@ -326,7 +359,7 @@ export default {
             { class: 'aki-date-header-week' },
             vm.weekTextsData.map((w, index) => {
               const weekend = vm.mondayFirst ? [5, 6] : [0, 6]
-              return h('span', { class: { 'rest': weekend.includes(index) } }, w)
+              return h('span', { class: { rest: weekend.includes(index) } }, w)
             })
           )
         ]),
@@ -352,9 +385,16 @@ export default {
                 } else {
                   const key = Object.keys(this.customComputed)[0]
                   const start = new Date(key)
-                  if (Date.compare(today, start) > -1 && this.customIndex < Infinity && this.customComputed[key].length > 0) {
-                    currentDate.data.custom = this.customComputed[key][this.customIndex++]
-                    if (this.customIndex === this.customComputed[key].length) this.customIndex = Infinity
+                  if (
+                    Date.compare(today, start) > -1 &&
+                    this.customIndex < Infinity &&
+                    this.customComputed[key].length > 0
+                  ) {
+                    currentDate.data.custom = this.customComputed[key][
+                      this.customIndex++
+                    ]
+                    if (this.customIndex === this.customComputed[key].length)
+                      this.customIndex = Infinity
                   }
                 }
                 // 禁用区域
@@ -370,7 +410,12 @@ export default {
                 const { boundary, range, disabled } = currentDate.data
                 const customDay = currentDate.data.custom
                 const info = customDay.info || ''
-                const texts = typeof info === 'string' ? [{ text: info }] : info instanceof Array ? info || [{}] : [info]
+                const texts =
+                  typeof info === 'string'
+                    ? [{ text: info }]
+                    : info instanceof Array
+                      ? info || [{}]
+                      : [info]
                 const rest = today.isWeekend()
                 return h(
                   'div',
@@ -381,7 +426,10 @@ export default {
                       { 'aki-date-month-day-range': range },
                       { 'aki-date-month-day-disabled': disabled }
                     ],
-                    style: { 'background-color': customDay.bgc, 'color': customDay.color },
+                    style: {
+                      'background-color': customDay.bgc,
+                      color: customDay.color
+                    },
                     attrs: {
                       'data-date': today.toYMD()
                     },
@@ -401,7 +449,17 @@ export default {
                               : '&nbsp;'
                       }
                     }),
-                    h('p', { class: ['aki-date-month-day-number', { 'rest': rest, 'disabled': disabled }], style: { 'color': customDay.color } }, Date.equalsDay(today, Date.today()) ? '今天' : index + 1),
+                    h(
+                      'p',
+                      {
+                        class: [
+                          'aki-date-month-day-number',
+                          { rest: rest, disabled: disabled }
+                        ],
+                        style: { color: customDay.color }
+                      },
+                      Date.equalsDay(today, Date.today()) ? '今天' : index + 1
+                    ),
                     ...texts.map(t =>
                       h('p', { style: { color: t.color } }, t.text || t)
                     )
@@ -415,7 +473,8 @@ export default {
               max = date.getWeekAsFirstDay()
             } else {
               min = 0
-              max = date.getWeekAsFirstDay() === 7 ? 0 : date.getWeekAsFirstDay()
+              max =
+                date.getWeekAsFirstDay() === 7 ? 0 : date.getWeekAsFirstDay()
             }
             for (let i = min; i < max; i++) {
               daysDOM.unshift(
@@ -449,5 +508,5 @@ export default {
 </script>
 
 <style scoped>
-@import './style.css'
+@import "./style.css";
 </style>

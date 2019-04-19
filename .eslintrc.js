@@ -78,10 +78,6 @@ module.exports = {
       2,
       'always-multiline'
     ],
-    'operator-linebreak': [
-      2,
-      'before'
-    ],
     'space-infix-ops': 2,
     'key-spacing': 2,
     'space-before-blocks': 2,
