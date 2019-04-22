@@ -123,7 +123,7 @@ export default {
       async handler([start, end]) {
         await this.$nextTick()
         if (start) {
-          if (this.selectArea[0] && Date.compare(new Date(start), new Date(this.selectArea[0]) < 0)) return this.$emit('disable', { date: new Date(start) })
+          if (this.selectArea[0] && Date.compare(new Date(start), new Date(this.selectArea[0])) < 0) return this.$emit('disable', { date: new Date(start) })
           const day = this.allDays.find(day => Date.equalsDay(day.date, new Date(start)))
           if (day) {
             if (day.data.custom.disabled) return this.$emit('disable', day)
@@ -137,7 +137,7 @@ export default {
           }
         }
         if (end && !this.single) {
-          if (this.selectArea[1] && Date.compare(new Date(end), new Date(this.selectArea[1]) > 0)) return this.$emit('disable', { date: new Date(end) })
+          if (this.selectArea[1] && Date.compare(new Date(end), new Date(this.selectArea[1])) > 0) return this.$emit('disable', { date: new Date(end) })
           const day = this.allDays.find(day => Date.equalsDay(day.date, new Date(end)))
           if (day) {
             if (day.data.custom.disabled) return this.$emit('disable', day)
