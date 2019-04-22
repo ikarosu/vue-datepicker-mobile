@@ -311,7 +311,7 @@ export default {
         return
       }
       if (this.single) {
-        this.$set(this.value.start.data, 'boundary', undefined)
+        if (this.value.start) this.$set(this.value.start.data, 'boundary', undefined)
         this.value.start = dataDay
       } else {
         const { start, end } = this.value
