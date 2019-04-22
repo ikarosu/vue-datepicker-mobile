@@ -71,7 +71,6 @@ export default {
       },
       weekTextsData: this.weekTexts.concat([]),
       observer: null,
-      customIndex: 0,
       last: {
         start: undefined,
         range: [],
@@ -124,16 +123,30 @@ export default {
       async handler([start, end]) {
         await this.$nextTick()
         if (start) {
-          if (this.value.start && this.value.start.date.toYMD() !== start)
-            this.$set(this.value.start.data, 'boundary', undefined)
-          this.value.start = this.allDays.find(
-            day => day.date.toYMD() === start
-          )
+          if (this.selectArea[0] && Date.compare(new Date(start), new Date(this.selectArea[0]) < 0)) return this.$emit('disable', { date: new Date(start) })
+          const day = this.allDays.find(day => Date.equalsDay(day.date, new Date(start)))
+          if (day) {
+            if (day.data.custom.disabled) return this.$emit('disable', day)
+            if (this.value.start && this.value.start.date.toYMD() !== start)
+              this.$set(this.value.start.data, 'boundary', undefined)
+            this.value.start = this.allDays.find(
+              day => day.date.toYMD() === start
+            )
+          } else {
+            throw 'Props "selected" value not yet render.'
+          }
         }
-        if (end) {
-          if (this.value.end && this.value.end.date.toYMD() !== end)
-            this.$set(this.value.end.data, 'boundary', undefined)
-          this.value.end = this.allDays.find(day => day.date.toYMD() === end)
+        if (end && !this.single) {
+          if (this.selectArea[1] && Date.compare(new Date(end), new Date(this.selectArea[1]) > 0)) return this.$emit('disable', { date: new Date(end) })
+          const day = this.allDays.find(day => Date.equalsDay(day.date, new Date(end)))
+          if (day) {
+            if (day.data.custom.disabled) return this.$emit('disable', day)
+            if (this.value.end && this.value.end.date.toYMD() !== end)
+              this.$set(this.value.end.data, 'boundary', undefined)
+            this.value.end = this.allDays.find(day => day.date.toYMD() === end)
+          } else {
+            throw 'Props "selected" value not yet render.'
+          }
         }
       }
     },
@@ -157,9 +170,6 @@ export default {
           this.observer.observe(d)
           d.dataset.obs = 'true'
         })
-    },
-    custom() {
-      this.customIndex = 0
     },
     'value.start'(v) {
       if (!v) return
@@ -207,18 +217,6 @@ export default {
         this.$set(day.data, 'range', true)
       })
     },
-    'allDays.length'() {
-      const days = this.allDays
-      if (this.customMode === 0) {
-        const key = Object.keys(this.customComputed)[0]
-        const customData = this.custom[key]
-        const start = new Date(key)
-        const index = days.findIndex(day => Date.equalsDay(day.date, start))
-        customData.forEach((custom, i) => {
-          days[index + i].data.custom = custom
-        })
-      }
-    }
   },
   created() {
     for (let i = 1 - INIT_LENGTH; i < INIT_LENGTH; i++) {
@@ -313,6 +311,7 @@ export default {
         return
       }
       if (this.single) {
+        this.$set(this.value.start.data, 'boundary', undefined)
         this.value.start = dataDay
       } else {
         const { start, end } = this.value
@@ -337,6 +336,7 @@ export default {
   },
   render(h) {
     const vm = this
+    let customIndex = 0
     return h(
       'section',
       { class: ['aki-date', { 'aki-date-visible': this.visible }] },
@@ -396,17 +396,16 @@ export default {
                   }
                 } else {
                   const key = Object.keys(this.customComputed)[0]
+                  const data = this.customComputed[key]
                   const start = new Date(key)
                   if (
                     Date.compare(today, start) > -1 &&
-                    this.customIndex < Infinity &&
-                    this.customComputed[key].length > 0
+                    customIndex < Infinity &&
+                    data.length > 0
                   ) {
-                    currentDate.data.custom = this.customComputed[key][
-                      this.customIndex++
-                    ]
-                    if (this.customIndex === this.customComputed[key].length)
-                      this.customIndex = Infinity
+                    currentDate.data.custom = data[customIndex++]
+                    if (customIndex === data.length)
+                      customIndex = Infinity
                   }
                 }
                 // 禁用区域
