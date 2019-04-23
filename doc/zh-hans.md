@@ -16,9 +16,11 @@
 
 | 参数 | 说明 | 类型 | 默认值 |
 | :-: | :- | :-: | :-: |
-| custom | 自定义数据，对象的key表示数据插入的位置，value为一个按日排序的数据数组。有两种模式。* | object | - |
+| custom | 自定义数据，对象的key表示数据插入的位置，value为一个按日排序的数据数组。有两种模式。* | [object, array] | - |
 | endText | 选中的终点日期文本 | string | '离店' |
-| initDate | 日历初始化位置，接受一个日期字符串，默认当年当月。 | string | - |
+| initDate | 日历初始化位置，接受一个日期字符串，默认当年当月。 | string | 今日 |
+| initLength | 从initDate开始，初始渲染长度 | number | 6 |
+| loadLength | 滚动到尽头时每次加载的长度 | number | 6 |
 | mondayFirst | 是否周一开头 | boolean | true |
 | selectArea | 允许用户选择的区域。数组表示开始和结束示例：`['2019-05-01', '2019-08-02']` | array | - |
 | selected | 选中某一段区域。数据结构同上 | array | - |
@@ -27,7 +29,7 @@
 | cancleText | 取消按钮文本 | string | '取消' |
 | confirmText | 确认按钮文本 | string | '确认' |
 | visible | 显示这个日期选择器 | boolean | false |
-| weekTexts | 从周一到周日的数组，用于自定义显示名称 | boolean | `['一', '二', '三', '四', '五', '六', '日']` |
+| weekTexts | 从周一到周日的数组，用于自定义显示名称 | array | `['一', '二', '三', '四', '五', '六', '日']` |
 
 \* 注
 
@@ -45,6 +47,12 @@
   '2019-04-09': [{custom1},{custom2},{custom29},{custom30},{custom99},{custom100},{custom2xx},{custom3xx}]
 }
 ```
+
+```javascript
+// 直接传入一个数组，相当于上面的key为当日
+[{custom1},{custom2},{custom29},{custom30},{custom99},{custom100},{custom2xx},{custom3xx}]
+```
+
 
 ### custom
 

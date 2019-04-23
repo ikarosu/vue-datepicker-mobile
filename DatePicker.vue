@@ -1,6 +1,4 @@
 <script>
-const INIT_LENGTH = 7
-const RENDER_COUNT = 3
 export default {
   name: 'AkiDate',
   props: {
@@ -59,6 +57,14 @@ export default {
       default() {
         return []
       }
+    },
+    initLength: {
+      type: Number,
+      default: 6
+    },
+    loadLength: {
+      type: Number,
+      default: 6
     }
   },
   data() {
@@ -219,7 +225,7 @@ export default {
     },
   },
   created() {
-    for (let i = 1 - INIT_LENGTH; i < INIT_LENGTH; i++) {
+    for (let i = 1 - (this.initLength + 1); i < this.initLength + 1; i++) {
       const date = this.initDisplay.clone().addMonths(i)
       this.renderDate.push({
         date,
@@ -234,7 +240,7 @@ export default {
         if (entry.intersectionRatio <= 0) {
           if (this.allDays[0].data.disabled) return
           if (this.renderDate[2].date.toYM() === new Date(ym).toYM()) {
-            for (let i = 1; i <= RENDER_COUNT; i++) {
+            for (let i = 1; i <= this.loadLength; i++) {
               const date = this.renderDate[0].date.clone().addMonths(-1)
               this.renderDate.unshift({
                 date,
@@ -251,7 +257,7 @@ export default {
           if (this.allDays[this.allDays.length - 1].data.disabled) return
           const last = this.renderDate[this.renderDate.length - 1]
           if (last.date.toYM() === new Date(ym).toYM()) {
-            for (let i = 1; i <= RENDER_COUNT; i++) {
+            for (let i = 1; i <= this.loadLength; i++) {
               const date = last.date.clone().addMonths(i)
               this.renderDate.push({
                 date: date,
@@ -289,7 +295,7 @@ export default {
       await this.$nextTick()
       const wrap = this.$refs['date-body']
       let top = wrap.scrollTop
-      for (let i = 0; i < RENDER_COUNT * 2; i++) {
+      for (let i = 0; i < this.loadLength * 2; i++) {
         top += wrap.children[i].offsetHeight
       }
       setTimeout(() => {

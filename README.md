@@ -18,9 +18,11 @@
 
 | param | description | type | default |
 | :-: | :- | :-: | :-: |
-| custom | custom data.* | object | - |
+| custom | custom data.* | [object, array] | - |
 | endText | text of end for selected | string | '离店' |
-| initDate | Init position for visible month.Allow a string of date,default is this month. | string | - |
+| initDate | Init position for visible month.Allow a string of date,default is this month. | string | today |
+| initLength | Init render length from init-date. | number | 6 |
+| loadLength | scroll load render length every time. | number | 6 |
 | mondayFirst | Whether Monday is the first-day as a week, default for Sunday. | boolean | true |
 | selectArea | area for allow user choose date. e.g.`['2019-05-01', '2019-08-02']` | array | - |
 | selected | select some area. Ibid. | array | - |
@@ -29,7 +31,7 @@
 | cancelText | text for cancel button | string | '取消' |
 | confirmText | text for confirm button | string | '确认' |
 | visible | display state, show or hide datepicker window. | boolean | false |
-| weekTexts | texts array of week name | boolean | `['一', '二', '三', '四', '五', '六', '日']` |
+| weekTexts | texts array of week name | array | `['一', '二', '三', '四', '五', '六', '日']` |
 
 \* 注
 
@@ -46,6 +48,11 @@
 {
   '2019-04-09': [{custom1},{custom2},{custom29},{custom30},{custom99},{custom100},{custom2xx},{custom3xx}]
 }
+```
+
+```javascript
+// 直接传入一个数组，相当于上面的key为当日
+[{custom1},{custom2},{custom29},{custom30},{custom99},{custom100},{custom2xx},{custom3xx}]
 ```
 
 ### custom
