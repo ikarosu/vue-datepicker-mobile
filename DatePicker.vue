@@ -322,9 +322,11 @@ export default {
       } else {
         const { start, end } = this.value
         if (start && end) {
-          this.$set(this.value.start.data, 'boundary', undefined)
+          if (!Date.equalsDay(start.date, dataDay.date)) {
+            this.$set(this.value.start.data, 'boundary', undefined)
+            this.value.start = dataDay
+          }
           this.$set(this.value.end.data, 'boundary', undefined)
-          this.value.start = dataDay
           this.value.end = undefined
         } else if (start) {
           this.value.end = dataDay
