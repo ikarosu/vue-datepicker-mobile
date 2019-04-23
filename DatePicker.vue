@@ -192,11 +192,14 @@ export default {
       } else this.$set(v.data, 'boundary', 'start')
     },
     'value.end'(v) {
-      if (!v) return
+      if (!v) {
+        if (this.value.start) this.$set(this.value.start.data, 'boundary', 'start')
+        return
+      }
       if (this.value.start) {
         this.cleanLastStyle()
         this.$set(this.value.end.data, 'boundary', undefined)
-        if (Date.compare(this.value.start.date, v.date) < 0)
+        if (Date.compare(this.value.start.date, v.date) < 1)
           this.$set(v.data, 'boundary', 'end')
         else {
           this.value.end = this.value.start
