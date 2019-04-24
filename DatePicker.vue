@@ -127,6 +127,7 @@ export default {
       immediate: true,
       deep: true,
       async handler([start, end]) {
+        console.log('0', 0)
         await this.$nextTick()
         if (start) {
           if (this.selectArea[0] && Date.compare(new Date(start), new Date(this.selectArea[0])) < 0) return this.$emit('disable', { date: new Date(start) })
@@ -141,8 +142,12 @@ export default {
           } else {
             throw 'Props "selected" value not yet render.'
           }
+        } else {
+          if (this.value.start) this.$set(this.value.start.data, 'boundary', undefined)
+          this.value.start = undefined
         }
-        if (end && !this.single) {
+        if (this.single) return
+        if (end) {
           if (this.selectArea[1] && Date.compare(new Date(end), new Date(this.selectArea[1])) > 0) return this.$emit('disable', { date: new Date(end) })
           const day = this.allDays.find(day => Date.equalsDay(day.date, new Date(end)))
           if (day) {
@@ -153,6 +158,9 @@ export default {
           } else {
             throw 'Props "selected" value not yet render.'
           }
+        } else {
+          if (this.value.end) this.$set(this.value.end.data, 'boundary', undefined)
+          this.value.end = undefined
         }
       }
     },
