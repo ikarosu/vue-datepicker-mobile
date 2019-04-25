@@ -127,7 +127,6 @@ export default {
       immediate: true,
       deep: true,
       async handler([start, end]) {
-        console.log('0', 0)
         await this.$nextTick()
         if (start) {
           if (this.selectArea[0] && Date.compare(new Date(start), new Date(this.selectArea[0])) < 0) return this.$emit('disable', { date: new Date(start) })
@@ -429,14 +428,23 @@ export default {
                 }
                 // 禁用区域
                 const [start, end] = this.selectArea
-                if (start) {
-                  const date = new Date(start)
-                  if (Date.compare(today, date) < 0) days[index].data.disabled = true
+                if (start || end) {
+                  if (start && end) {
+                    const dateS = new Date(start)
+                    const dateE = new Date(end)
+                    if (Date.compare(today, dateS) < 0 || Date.compare(today, dateE) > 0) days[index].data.disabled = true
+                    else days[index].data.disabled = false
+                  } else if (end) {
+                    const dateE = new Date(end)
+                    if (Date.compare(today, dateE) > 0) days[index].data.disabled = true
+                    else days[index].data.disabled = false
+                  } else {
+                    const dateS = new Date(start)
+                    if (Date.compare(today, dateS) < 0) days[index].data.disabled = true
+                    else days[index].data.disabled = false
+                  }
                 }
-                if (end) {
-                  const date = new Date(end)
-                  if (Date.compare(today, date) > 0) days[index].data.disabled = true
-                }
+                else days[index].data.disabled = false
                 const { boundary, range, disabled } = currentDate.data
                 const customDay = currentDate.data.custom
                 const info = customDay.info || ''
