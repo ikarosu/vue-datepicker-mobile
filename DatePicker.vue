@@ -65,6 +65,10 @@ export default {
     loadLength: {
       type: Number,
       default: 6
+    },
+    mode: {
+      type: Number,
+      default: 0
     }
   },
   data() {
@@ -357,7 +361,7 @@ export default {
     let customIndex = 0
     return h(
       'section',
-      { class: ['aki-date', { 'aki-date-visible': this.visible }] },
+      { class: ['aki-date', this.mode === 1 ? 'aki-date-content' : 'aki-date-fixed', { 'aki-date-visible': this.visible }] },
       [
         h('header', { class: 'aki-date-header' }, [
           h('div', { class: 'aki-date-header-action' }, [
