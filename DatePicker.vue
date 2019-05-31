@@ -240,7 +240,9 @@ export default {
   },
   created() {
     for (let i = 1 - (this.initLength + 1); i < this.initLength + 1; i++) {
-      const date = this.initDisplay.clone().addMonths(i)
+      const d = this.initDisplay
+      d.setDate(1)
+      const date = new Date(d.clone().setMonth(d.getMonth() + i))
       this.renderDate.push({
         date,
         days: this.initDays(date)
